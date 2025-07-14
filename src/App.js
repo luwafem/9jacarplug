@@ -161,7 +161,7 @@ const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrent
           value={formData.name}
           onChange={handleChange}
           className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="John Doe"
+          placeholder="Your Name"
         />
         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
       </div>
@@ -174,7 +174,7 @@ const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrent
           value={formData.email}
           onChange={handleChange}
           className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="john.doe@example.com"
+          placeholder="Your-Mail@example.com"
         />
         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
@@ -1225,7 +1225,7 @@ const App = () => {
       model: 'Camry',
       year: 2020,
       price: '₦12,500,000',
-      imageUrl: 'https://placehold.co/400x250/ffffff/000000?text=Toyota+Camry',
+      imageUrl: 'https://pictures-nigeria.jijistatic.net/165457709_MzAwLTIyNS04NjA4ZTQxNTMx.webp',
       condition: 'Tokunbo (Imported Used)',
       mileage: '55,000 km',
       fuelType: 'Petrol',
@@ -1239,7 +1239,7 @@ const App = () => {
       model: 'CR-V',
       year: 2018,
       price: '₦10,800,000',
-      imageUrl: 'https://placehold.co/400x250/ffffff/000000?text=Honda+CRV',
+      imageUrl: 'https://pictures-nigeria.jijistatic.net/174879961_MzAwLTIyNS1hMGFkNjcyNDlm.webp',
       condition: 'Nigeria Used',
       mileage: '80,000 km',
       fuelType: 'Petrol',
@@ -1253,7 +1253,7 @@ const App = () => {
       model: 'C-Class',
       year: 2021,
       price: '₦25,000,000',
-      imageUrl: 'https://placehold.co/400x250/ffffff/000000?text=Mercedes+C-Class',
+      imageUrl: 'https://pictures-nigeria.jijistatic.net/177637811_MzAwLTIyNS1jZWZlZGUwZTlh.webp',
       condition: 'Brand New',
       mileage: '500 km',
       fuelType: 'Petrol',
@@ -1263,16 +1263,16 @@ const App = () => {
     },
     {
       id: 4,
-      make: 'Ford',
-      model: 'F-150',
-      year: 2019,
-      price: '₦18,000,000',
-      imageUrl: 'https://placehold.co/400x250/ffffff/000000?text=Ford+F-150',
+      make: 'Honda',
+      model: 'Accord',
+      year: 2013,
+      price: '₦15,000,000',
+      imageUrl: 'https://pictures-nigeria.jijistatic.net/171636089_OTc3LTEwODAtYjMxMTYxNjMzMS0x.webp',
       condition: 'Tokunbo (Imported Used)',
       mileage: '70,000 km',
       fuelType: 'Petrol',
       transmissionType: 'Automatic',
-      bodyStyle: 'Truck',
+      bodyStyle: 'Sedan',
       features: ['All-Wheel Drive (AWD) / 4x4', 'Backup Camera/Parking Sensors'],
     },
   ];
@@ -1461,7 +1461,7 @@ const App = () => {
       </section>
 
       {/* Footer Section */}
-      <footer className="bg-black text-white py-6 sm:py-8 rounded-t-lg">
+      <footer className="bg-black text-white py-6 sm:py-8 ">
         <div className="container mx-auto text-center px-4">
           <p className="text-sm sm:text-base">&copy; {new Date().getFullYear()} CarSource Pro. All rights reserved.</p>
           <p className="mt-1 sm:mt-2 text-xs sm:text-sm opacity-80">
