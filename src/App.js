@@ -106,6 +106,7 @@ const carData = {
 
 
 // Component for Step 1: Contact Information
+// Component for Step 1: Contact Information
 const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrentStep, setIsWhatsappSameAsPhone, isWhatsappSameAsPhone }) => {
 
   const handlePhoneInputChange = (e) => {
@@ -114,18 +115,16 @@ const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrent
 
     // Ensure it always starts with +234
     if (!value.startsWith('+234')) {
-      value = '+234' + value.replace(/[^0-9]/g, '').substring(3); // Keep only numbers after +234, limit to original length
+      value = '+234' + value.replace(/[^0-9]/g, '').substring(3);
     } else {
-      value = '+234' + value.substring(4).replace(/[^0-9]/g, ''); // Ensure only numbers after prefix
+      value = '+234' + value.substring(4).replace(/[^0-9]/g, '');
     }
 
-    // If the value becomes just '+234' and it's not the initial load, allow it to be just '+234'
     if (value === '+234' && e.target.value.length < 4) {
       value = '+234';
     }
 
     handleChange({ target: { name, value } });
-
     // If WhatsApp is set to be same as phone, update it too
     if (isWhatsappSameAsPhone && name === 'phone') {
       handleChange({ target: { name: 'whatsappNumber', value } });
@@ -141,87 +140,111 @@ const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrent
       handleChange({ target: { name: 'whatsappNumber', value: '+234' } }); // Reset or clear
     }
   };
-
+  
   return (
     <div className="space-y-6">
+      {/* Error Banner: Updated background/text color for better contrast */}
       {hasErrorsForCurrentStep() && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+        <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-6" role="alert">
           <strong className="font-bold">Oops!</strong>
           <span className="block sm:inline ml-2">Please correct the errors below to proceed.</span>
         </div>
       )}
-      <h3 className="text-2xl font-semibold text-gray-800">Step 1: Your Contact Information</h3>
-      <p className="text-gray-600">Let us know how to reach you.</p>
-      <div>
-        <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Full Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="Your Name"
-        />
-        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-      </div>
-      <div>
-        <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email Address</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="Your-Mail@example.com"
-        />
-        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-      </div>
-      <div>
-        <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">Phone Number</label>
-        <input
-          type="tel"
-          id="phone"
-          name="phone"
-          value={formData.phone}
-          onChange={handlePhoneInputChange}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="+234..."
-        />
-        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-      </div>
-      <div>
-        <label htmlFor="whatsappNumber" className="block text-gray-700 font-medium mb-2">WhatsApp Number</label>
-        <input
-          type="tel"
-          id="whatsappNumber"
-          name="whatsappNumber"
-          value={formData.whatsappNumber}
-          onChange={handlePhoneInputChange} // Use the same handler for consistency
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="+234..."
-          disabled={isWhatsappSameAsPhone} // Disable if checkbox is checked
-        />
-        {errors.whatsappNumber && <p className="text-red-500 text-sm mt-1">{errors.whatsappNumber}</p>}
-        <div className="mt-2 flex items-center">
+      {/* Step Title: Using the accent color */}
+      <h3 className="text-3xl font-bold text-orange-600 mb-6">Step 1: Your Contact Information</h3>
+      <p className="text-gray-600 mb-6">Let us know how to reach you.</p>
+
+      {/* Grid 1: Name and Email */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Full Name */}
+        <div>
+          <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Full Name</label>
           <input
-            type="checkbox"
-            id="sameAsPhone"
-            checked={isWhatsappSameAsPhone}
-            onChange={handleWhatsappCheckboxChange}
-            className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="Your Name"
           />
-          <label htmlFor="sameAsPhone" className="ml-2 text-gray-700 text-sm">Same as Phone Number</label>
+          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
         </div>
-      </div>
-      <div className="flex justify-end">
+        
+        {/* Email Address */}
+        <div>
+          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="Your-Mail@example.com"
+          />
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+        </div>
+      </div> {/* End Grid 1 */}
+
+      {/* Grid 2: Phone and WhatsApp */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Phone Number */}
+        <div>
+          <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handlePhoneInputChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="+234..."
+          />
+          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+        </div>
+
+        {/* WhatsApp Number */}
+        <div>
+          <label htmlFor="whatsappNumber" className="block text-gray-700 font-medium mb-2">WhatsApp Number</label>
+          <input
+            type="tel"
+            id="whatsappNumber"
+            name="whatsappNumber"
+            value={formData.whatsappNumber}
+            onChange={handlePhoneInputChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="+234..."
+            disabled={isWhatsappSameAsPhone} // Disable if checkbox is checked
+          />
+          {errors.whatsappNumber && <p className="text-red-500 text-sm mt-1">{errors.whatsappNumber}</p>}
+          
+          {/* Checkbox: Updated text color to orange-600 */}
+          <div className="mt-2 flex items-center">
+            <input
+              type="checkbox"
+              id="sameAsPhone"
+              checked={isWhatsappSameAsPhone}
+              onChange={handleWhatsappCheckboxChange}
+              className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+            />
+            <label htmlFor="sameAsPhone" className="ml-2 text-gray-700 text-sm">Same as Phone Number</label>
+          </div>
+        </div>
+      </div> {/* End Grid 2 */}
+
+      <div className="flex justify-end pt-4">
+        {/* Next Button: Updated to the new orange style */}
         <button
           type="button"
           onClick={nextStep}
-          className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200"
+          className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 transition duration-200"
         >
-          Next
+          Next: Vehicle Preferences
         </button>
       </div>
     </div>
@@ -229,21 +252,21 @@ const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrent
 };
 
 // Component for a single car preference entry
+// Component for a single car preference entry (Modified for Grid Layout)
 const CarPreferenceFields = ({
   carIndex,
   carPreference,
   handleCarPreferenceChange,
   removeCarPreference,
   errors,
-  currentSelectedBrand, // This prop now correctly holds the selected brand for this car
-  setCurrentSelectedBrand, // This is the setter from the parent to update the brand in the parent's state
+  currentSelectedBrand,
+  setCurrentSelectedBrand,
 }) => {
   const [brandSuggestions, setBrandSuggestions] = useState([]);
   const [modelSuggestions, setModelSuggestions] = useState([]);
 
   const brandInputRef = useRef(null);
   const modelInputRef = useRef(null);
-
   // Effect to handle clicks outside the suggestion lists to close them
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -260,14 +283,14 @@ const CarPreferenceFields = ({
     };
   }, []);
 
-  // Handle change for vehicleMake input with suggestions
+  // Handlers (Functionality remains unchanged)
   const handleMakeChange = (e) => {
     const value = e.target.value;
-    handleCarPreferenceChange(carIndex, 'vehicleMake', value); // Update specific car's make
-    setCurrentSelectedBrand(carIndex, ''); // Reset selected brand in parent when typing
-    setModelSuggestions([]); // Clear model suggestions
-    handleCarPreferenceChange(carIndex, 'vehicleModel', ''); // Clear model
-    handleCarPreferenceChange(carIndex, 'bodyStyle', ''); // Clear body style
+    handleCarPreferenceChange(carIndex, 'vehicleMake', value);
+    setCurrentSelectedBrand(carIndex, '');
+    setModelSuggestions([]);
+    handleCarPreferenceChange(carIndex, 'vehicleModel', '');
+    handleCarPreferenceChange(carIndex, 'bodyStyle', '');
 
     if (value.length > 0) {
       const filtered = Object.keys(carData).filter(brand =>
@@ -279,19 +302,16 @@ const CarPreferenceFields = ({
     }
   };
 
-  // Handle selecting a brand from suggestions
   const handleBrandSelect = (brand) => {
-    // Wrap in setTimeout to ensure state update happens after the click event fully propagates
     setTimeout(() => {
       handleCarPreferenceChange(carIndex, 'vehicleMake', brand);
-      setCurrentSelectedBrand(carIndex, brand); // Update selected brand in parent state
-      setBrandSuggestions([]); // Clear brand suggestions after selection
-      handleCarPreferenceChange(carIndex, 'vehicleModel', ''); // Clear model when brand changes
-      handleCarPreferenceChange(carIndex, 'bodyStyle', ''); // Clear body style when brand changes
+      setCurrentSelectedBrand(carIndex, brand);
+      setBrandSuggestions([]);
+      handleCarPreferenceChange(carIndex, 'vehicleModel', '');
+      handleCarPreferenceChange(carIndex, 'bodyStyle', '');
     }, 0);
   };
 
-  // Handle change for vehicleModel input with suggestions
   const handleModelChange = (e) => {
     const value = e.target.value;
     handleCarPreferenceChange(carIndex, 'vehicleModel', value);
@@ -307,7 +327,6 @@ const CarPreferenceFields = ({
     }
   };
 
-  // Handle selecting a model from suggestions
   const handleModelSelect = (model) => {
     handleCarPreferenceChange(carIndex, 'vehicleModel', model);
     setModelSuggestions([]);
@@ -318,7 +337,6 @@ const CarPreferenceFields = ({
     }
   };
 
-  // Handle changes for checkbox group (Key Features)
   const handleFeatureChange = (e) => {
     const { value, checked } = e.target;
     let updatedFeatures = [...carPreference.keyFeatures];
@@ -334,212 +352,256 @@ const CarPreferenceFields = ({
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="border border-gray-200 rounded-lg p-6 mb-8 bg-white">
-      <div className="flex justify-between items-center mb-4">
-        <h4 className="text-xl font-semibold text-gray-800">Car #{carIndex + 1} Preferences</h4>
+    // Updated border and shadow for the car card
+    <div className="border border-gray-200 rounded-xl p-6 sm:p-8 mb-10 bg-white shadow-md">
+      <div className="flex justify-between items-center mb-6">
+        <h4 className="text-2xl font-semibold text-gray-800">Car #{carIndex + 1} Preferences</h4>
         {carIndex > 0 && ( // Only show remove button if it's not the first car
           <button
             type="button"
             onClick={() => removeCarPreference(carIndex)}
-            className="px-4 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition duration-200"
+            // Updated button style to orange
+            className="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition duration-200"
           >
             Remove Car
           </button>
         )}
       </div>
 
-      {/* Vehicle Make with Autocomplete */}
-      <div className="relative mb-4" ref={brandInputRef}>
-        <label htmlFor={`vehicleMake-${carIndex}`} className="block text-gray-700 font-medium mb-2">Vehicle Make</label>
-        <input
-          type="text"
-          id={`vehicleMake-${carIndex}`}
-          name={`vehicleMake-${carIndex}`} // Name can be generic if handled by index
-          value={carPreference.vehicleMake}
-          onChange={handleMakeChange}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="e.g., Toyota, BMW, Ford"
-          autoComplete="off"
-        />
-        {errors[`vehicleMake-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleMake-${carIndex}`]}</p>}
-        {brandSuggestions.length > 0 && (
-          <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto">
-            {brandSuggestions.map((brand, index) => (
-              <li
-                key={index}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-800"
-                onClick={() => handleBrandSelect(brand)}
-              >
-                {brand}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* ------------------------------------------- */}
+      {/* GRID 1: MAKE, MODEL, YEAR RANGE */}
+      {/* ------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        
+        {/* 1. Vehicle Make with Autocomplete */}
+        <div className="relative" ref={brandInputRef}>
+          <label htmlFor={`vehicleMake-${carIndex}`} className="block text-gray-700 font-medium mb-2">Vehicle Make</label>
+          <input
+            type="text"
+            id={`vehicleMake-${carIndex}`}
+            name={`vehicleMake-${carIndex}`}
+            value={carPreference.vehicleMake}
+            onChange={handleMakeChange}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="e.g., Toyota, BMW"
+            autoComplete="off"
+          />
+          {errors[`vehicleMake-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleMake-${carIndex}`]}</p>}
+          {brandSuggestions.length > 0 && (
+            <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
+              {brandSuggestions.map((brand, index) => (
+                <li
+                  key={index}
+                  className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-gray-800"
+                  onClick={() => handleBrandSelect(brand)}
+                >
+                  {brand}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      {/* Vehicle Model with Autocomplete (conditional based on selected brand) */}
-      <div className="relative mb-4" ref={modelInputRef}>
-        <label htmlFor={`vehicleModel-${carIndex}`} className="block text-gray-700 font-medium mb-2">Vehicle Model</label>
-        <input
-          type="text"
-          id={`vehicleModel-${carIndex}`}
-          name={`vehicleModel-${carIndex}`}
-          value={carPreference.vehicleModel}
-          onChange={handleModelChange}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder={currentSelectedBrand ? `e.g., ${Object.keys(carData[currentSelectedBrand] || {})[0] || 'Model'}` : "Select a Make first"}
-          disabled={!currentSelectedBrand}
-          autoComplete="off"
-        />
-        {errors[`vehicleModel-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleModel-${carIndex}`]}</p>}
-        {modelSuggestions.length > 0 && (
-          <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto">
-            {modelSuggestions.map((model, index) => (
-              <li
-                key={index}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-800"
-                onClick={() => handleModelSelect(model)}
-              >
-                {model}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+        {/* 2. Vehicle Model with Autocomplete */}
+        <div className="relative" ref={modelInputRef}>
+          <label htmlFor={`vehicleModel-${carIndex}`} className="block text-gray-700 font-medium mb-2">Vehicle Model</label>
+          <input
+            type="text"
+            id={`vehicleModel-${carIndex}`}
+            name={`vehicleModel-${carIndex}`}
+            value={carPreference.vehicleModel}
+            onChange={handleModelChange}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder={currentSelectedBrand ?
+              `e.g., ${Object.keys(carData[currentSelectedBrand] || {})[0] || 'Model'}` : "Select a Make first"}
+            disabled={!currentSelectedBrand}
+            autoComplete="off"
+          />
+          {errors[`vehicleModel-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleModel-${carIndex}`]}</p>}
+          {modelSuggestions.length > 0 && (
+            <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
+              {modelSuggestions.map((model, index) => (
+                <li
+                  key={index}
+                  className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-gray-800"
+                  onClick={() => handleModelSelect(model)}
+                >
+                  {model}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      <div className="mb-4">
-        <label htmlFor={`vehicleYearMin-${carIndex}`} className="block text-gray-700 font-medium mb-2">Model Year Range (2003 onwards)</label>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+        {/* 3. Model Year Range (Combined Min/Max) */}
+        <div>
+          <label htmlFor={`vehicleYearMin-${carIndex}`} className="block text-gray-700 font-medium mb-2">Model Year Range (Min - Max)</label>
+          <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
               id={`vehicleYearMin-${carIndex}`}
               name={`vehicleYearMin-${carIndex}`}
               value={carPreference.vehicleYearMin}
               onChange={(e) => handleCarPreferenceChange(carIndex, 'vehicleYearMin', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-              placeholder={`Min Year (e.g., ${minYearAllowed})`}
+              // Updated focus ring
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+              placeholder={`Min (${minYearAllowed})`}
               min={minYearAllowed}
               max={currentYear + 1}
             />
-          </div>
-          <div>
             <input
               type="number"
               id={`vehicleYearMax-${carIndex}`}
               name={`vehicleYearMax-${carIndex}`}
               value={carPreference.vehicleYearMax}
               onChange={(e) => handleCarPreferenceChange(carIndex, 'vehicleYearMax', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-              placeholder={`Max Year (e.g., ${currentYear})`}
+              // Updated focus ring
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+              placeholder={`Max (${currentYear})`}
               min={minYearAllowed}
               max={currentYear + 1}
             />
           </div>
+          {errors[`vehicleYear-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleYear-${carIndex}`]}</p>}
         </div>
-        {errors[`vehicleYear-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleYear-${carIndex}`]}</p>}
+      </div>
+      
+      {/* ------------------------------------------- */}
+      {/* GRID 2: CORE SPECS (BODY, FUEL, TRANSMISSION) */}
+      {/* ------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        
+        {/* 4. Body Style */}
+        <div>
+          <label htmlFor={`bodyStyle-${carIndex}`} className="block text-gray-700 font-medium mb-2">Body Style</label>
+          <select
+            id={`bodyStyle-${carIndex}`}
+            name={`bodyStyle-${carIndex}`}
+            value={carPreference.bodyStyle}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'bodyStyle', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Body Style</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Truck">Truck</option>
+            <option value="Coupe">Coupe</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="Minivan">Minivan</option>
+            <option value="Convertible">Convertible</option>
+            <option value="Van">Van</option>
+          </select>
+          {errors[`bodyStyle-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`bodyStyle-${carIndex}`]}</p>}
+        </div>
+        
+        {/* 5. Fuel Type */}
+        <div>
+          <label htmlFor={`fuelType-${carIndex}`} className="block text-gray-700 font-medium mb-2">Fuel Type</label>
+          <select
+            id={`fuelType-${carIndex}`}
+            name={`fuelType-${carIndex}`}
+            value={carPreference.fuelType}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'fuelType', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Fuel Type</option>
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Electric">Electric</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+          {errors[`fuelType-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`fuelType-${carIndex}`]}</p>}
+        </div>
+
+        {/* 6. Transmission Type */}
+        <div>
+          <label htmlFor={`transmissionType-${carIndex}`} className="block text-gray-700 font-medium mb-2">Transmission Type</label>
+          <select
+            id={`transmissionType-${carIndex}`}
+            name={`transmissionType-${carIndex}`}
+            value={carPreference.transmissionType}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'transmissionType', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Transmission</option>
+            <option value="Automatic">Automatic</option>
+            <option value="Manual">Manual</option>
+          </select>
+          {errors[`transmissionType-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`transmissionType-${carIndex}`]}</p>}
+        </div>
       </div>
 
-      <div className="mb-4">
-        <label htmlFor={`bodyStyle-${carIndex}`} className="block text-gray-700 font-medium mb-2">Body Style</label>
-        <select
-          id={`bodyStyle-${carIndex}`}
-          name={`bodyStyle-${carIndex}`}
-          value={carPreference.bodyStyle}
-          onChange={(e) => handleCarPreferenceChange(carIndex, 'bodyStyle', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-        >
-          <option value="">Select Body Style</option>
-          <option value="Sedan">Sedan</option>
-          <option value="SUV">SUV</option>
-          <option value="Truck">Truck</option>
-          <option value="Coupe">Coupe</option>
-          <option value="Hatchback">Hatchback</option>
-          <option value="Minivan">Minivan</option>
-          <option value="Convertible">Convertible</option>
-          <option value="Van">Van</option>
-        </select>
-        {errors[`bodyStyle-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`bodyStyle-${carIndex}`]}</p>}
-      </div>
+      {/* ------------------------------------------- */}
+      {/* GRID 3: CONDITION, SEATS, COLOR */}
+      {/* ------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        
+        {/* 7. Car Condition */}
+        <div>
+          <label htmlFor={`carCondition-${carIndex}`} className="block text-gray-700 font-medium mb-2">Car Condition</label>
+          <select
+            id={`carCondition-${carIndex}`}
+            name={`carCondition-${carIndex}`}
+            value={carPreference.carCondition}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'carCondition', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Condition</option>
+            <option value="Tokunbo (Imported Used)">Tokunbo (Imported Used)</option>
+            <option value="Nigeria Used">Nigeria Used</option>
+            <option value="Brand New">Brand New</option>
+          </select>
+          {errors[`carCondition-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`carCondition-${carIndex}`]}</p>}
+        </div>
+        
+        {/* 8. Number of Seats (Optional) */}
+        <div>
+          <label htmlFor={`numberOfSeats-${carIndex}`} className="block text-gray-700 font-medium mb-2">Number of Seats (Optional)</label>
+          <select
+            id={`numberOfSeats-${carIndex}`}
+            name={`numberOfSeats-${carIndex}`}
+            value={carPreference.numberOfSeats}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'numberOfSeats', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Number of Seats</option>
+            <option value="2">2 Seats</option>
+            <option value="4">4 Seats</option>
+            <option value="5">5 Seats</option>
+            <option value="6">6 Seats</option>
+            <option value="7">7 Seats</option>
+            <option value="8+">8+ Seats</option>
+          </select>
+          {errors[`numberOfSeats-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`numberOfSeats-${carIndex}`]}</p>}
+        </div>
 
-      {/* Fuel Type */}
-      <div className="mb-4">
-        <label htmlFor={`fuelType-${carIndex}`} className="block text-gray-700 font-medium mb-2">Fuel Type</label>
-        <select
-          id={`fuelType-${carIndex}`}
-          name={`fuelType-${carIndex}`}
-          value={carPreference.fuelType}
-          onChange={(e) => handleCarPreferenceChange(carIndex, 'fuelType', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-        >
-          <option value="">Select Fuel Type</option>
-          <option value="Petrol">Petrol</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Electric">Electric</option>
-          <option value="Hybrid">Hybrid</option>
-        </select>
-        {errors[`fuelType-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`fuelType-${carIndex}`]}</p>}
+        {/* 9. Car Color */}
+        <div>
+          <label htmlFor={`carColor-${carIndex}`} className="block text-gray-700 font-medium mb-2">Desired Car Color</label>
+          <input
+            type="text"
+            id={`carColor-${carIndex}`}
+            name={`carColor-${carIndex}`}
+            value={carPreference.carColor}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'carColor', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="e.g., Black, White, Red"
+          />
+          {errors[`carColor-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`carColor-${carIndex}`]}</p>}
+        </div>
       </div>
-
-      {/* Transmission Type */}
-      <div className="mb-4">
-        <label htmlFor={`transmissionType-${carIndex}`} className="block text-gray-700 font-medium mb-2">Transmission Type</label>
-        <select
-          id={`transmissionType-${carIndex}`}
-          name={`transmissionType-${carIndex}`}
-          value={carPreference.transmissionType}
-          onChange={(e) => handleCarPreferenceChange(carIndex, 'transmissionType', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-        >
-          <option value="">Select Transmission</option>
-          <option value="Automatic">Automatic</option>
-          <option value="Manual">Manual</option>
-        </select>
-        {errors[`transmissionType-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`transmissionType-${carIndex}`]}</p>}
-      </div>
-
-      {/* Number of Seats */}
-      <div className="mb-4">
-        <label htmlFor={`numberOfSeats-${carIndex}`} className="block text-gray-700 font-medium mb-2">Number of Seats (Optional)</label>
-        <select
-          id={`numberOfSeats-${carIndex}`}
-          name={`numberOfSeats-${carIndex}`}
-          value={carPreference.numberOfSeats}
-          onChange={(e) => handleCarPreferenceChange(carIndex, 'numberOfSeats', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-        >
-          <option value="">Select Number of Seats</option>
-          <option value="2">2 Seats</option>
-          <option value="4">4 Seats</option>
-          <option value="5">5 Seats</option>
-          <option value="6">6 Seats</option>
-          <option value="7">7 Seats</option>
-          <option value="8+">8+ Seats</option>
-        </select>
-        {errors[`numberOfSeats-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`numberOfSeats-${carIndex}`]}</p>}
-      </div>
-
-      {/* Car Condition */}
-      <div className="mb-4">
-        <label htmlFor={`carCondition-${carIndex}`} className="block text-gray-700 font-medium mb-2">Car Condition</label>
-        <select
-          id={`carCondition-${carIndex}`}
-          name={`carCondition-${carIndex}`}
-          value={carPreference.carCondition}
-          onChange={(e) => handleCarPreferenceChange(carIndex, 'carCondition', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-        >
-          <option value="">Select Condition</option>
-          <option value="Tokunbo (Imported Used)">Tokunbo (Imported Used)</option>
-          <option value="Nigeria Used">Nigeria Used</option>
-          <option value="Brand New">Brand New</option>
-        </select>
-        {errors[`carCondition-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`carCondition-${carIndex}`]}</p>}
-      </div>
-
-      {/* Conditional field for Maximum Desired Mileage */}
+      
+      {/* 10. Conditional field for Maximum Desired Mileage */}
       {(carPreference.carCondition === 'Tokunbo (Imported Used)' || carPreference.carCondition === 'Nigeria Used') && (
-        <div className="mb-4">
+        <div className="mb-6">
           <label htmlFor={`maxMileage-${carIndex}`} className="block text-gray-700 font-medium mb-2">Maximum Desired Mileage (km) (Optional)</label>
           <input
             type="number"
@@ -547,7 +609,8 @@ const CarPreferenceFields = ({
             name={`maxMileage-${carIndex}`}
             value={carPreference.maxMileage}
             onChange={(e) => handleCarPreferenceChange(carIndex, 'maxMileage', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
             placeholder="e.g., 100,000"
             min="0"
           />
@@ -555,10 +618,10 @@ const CarPreferenceFields = ({
         </div>
       )}
 
-      {/* Key Features/Options */}
-      <div className="mb-4">
-        <label className="block text-gray-700 font-medium mb-2">Key Features/Options</label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {/* 11. Key Features/Options - Updated for visual separation */}
+      <div className="p-4 border border-orange-100 bg-orange-50 rounded-lg">
+        <label className="block text-gray-700 font-bold mb-3">Key Features/Options (Optional)</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {['Sunroof/Moonroof', 'Leather Seats', 'Navigation System', 'Backup Camera/Parking Sensors', 'Apple CarPlay/Android Auto', 'All-Wheel Drive (AWD) / 4x4', 'Heated Seats', 'Bluetooth Connectivity'].map((feature) => (
             <div key={feature} className="flex items-center">
               <input
@@ -568,28 +631,14 @@ const CarPreferenceFields = ({
                 value={feature}
                 checked={carPreference.keyFeatures.includes(feature)}
                 onChange={handleFeatureChange}
-                className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                // Updated checkbox color to orange-600
+                className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
               />
               <label htmlFor={`${feature.replace(/\s|\/|\(|\)/g, '')}-${carIndex}`} className="ml-2 text-gray-700 text-sm">{feature}</label>
             </div>
           ))}
         </div>
         {errors[`keyFeatures-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`keyFeatures-${carIndex}`]}</p>}
-      </div>
-
-      {/* Car Color */}
-      <div>
-        <label htmlFor={`carColor-${carIndex}`} className="block text-gray-700 font-medium mb-2">Desired Car Color</label>
-        <input
-          type="text"
-          id={`carColor-${carIndex}`}
-          name={`carColor-${carIndex}`}
-          value={carPreference.carColor}
-          onChange={(e) => handleCarPreferenceChange(carIndex, 'carColor', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-          placeholder="e.g., Black, White, Blue, Red"
-        />
-        {errors[`carColor-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`carColor-${carIndex}`]}</p>}
       </div>
     </div>
   );
@@ -664,20 +713,26 @@ const StepTwo = ({ formData, handleChange, nextStep, prevStep, errors, hasErrors
 };
 
 
-// Component for Step 3: Budget & Trade-in
+// Component for Step 3: Budget & Trade-in (Modified for Orange Theme and Layout)
+// Component for Step 3: Budget & Trade-in (Modified to add Payment and Referral options)
 const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, hasErrorsForCurrentStep }) => (
   <div className="space-y-6">
+    {/* Error Banner: Updated background/text color */}
     {hasErrorsForCurrentStep() && (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+      <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-6" role="alert">
           <strong className="font-bold">Oops!</strong>
           <span className="block sm:inline ml-2">Please correct the errors below to proceed.</span>
         </div>
     )}
-    <h3 className="text-2xl font-semibold text-gray-800">Step 3: Budget & Additional Details</h3>
-    <p className="text-gray-600">Tell us about your budget and any other requirements.</p>
+    {/* Step Title: Using the accent color */}
+    <h3 className="text-3xl font-bold text-orange-600 mb-6">Step 3: Budget & Additional Details</h3>
+ 
+    <p className="text-gray-600 mb-6">Tell us about your budget and any other requirements.</p>
+
+    {/* Price Range Grid (No Change) */}
     <div>
       <label htmlFor="minPrice" className="block text-gray-700 font-medium mb-2">Price Range (NGN)</label>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <input
             type="number"
@@ -685,12 +740,13 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
             name="minPrice"
             value={formData.minPrice}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
             placeholder="Min Price (e.g., 5,000,000)"
             min="0"
           />
           {errors.minPrice && <p className="text-red-500 text-sm mt-1">{errors.minPrice}</p>}
         </div>
+    
         <div>
           <input
             type="number"
@@ -698,7 +754,7 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
             name="maxPrice"
             value={formData.maxPrice}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
             placeholder="Max Price (e.g., 15,000,000)"
             min="0"
           />
@@ -708,7 +764,24 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
       {errors.priceRange && <p className="text-red-500 text-sm mt-1">{errors.priceRange}</p>}
     </div>
 
-    {/* Conditional fields for Swap */}
+    {/* 🌟 NEW FIELD: Payment Option/Finance 🌟 */}
+    <div>
+      <label htmlFor="paymentOption" className="block text-gray-700 font-medium mb-2">Payment Option</label>
+      <select
+        id="paymentOption"
+        name="paymentOption"
+        value={formData.paymentOption}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+      >
+        <option value="">Select Payment Type</option>
+        <option value="Cash Purchase">Cash Purchase</option>
+        <option value="Financing / Loan">Financing / Loan</option>
+      </select>
+      {errors.paymentOption && <p className="text-red-500 text-sm mt-1">{errors.paymentOption}</p>}
+    </div>
+
+    {/* Conditional fields for Swap (No Change) */}
     <div>
       <label htmlFor="swap" className="block text-gray-700 font-medium mb-2">Do you want to swap a vehicle?</label>
       <select
@@ -716,7 +789,7 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
         name="swap"
         value={formData.swap}
         onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
       >
         <option value="">Select Option</option>
         <option value="No">No</option>
@@ -726,66 +799,73 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
     </div>
 
     {formData.swap === 'Yes' && (
-      <div className="border border-gray-200 rounded-lg p-4 space-y-4 bg-white">
-        <h4 className="text-lg font-semibold text-gray-700">Swap Vehicle Details</h4>
-        <div>
-          <label htmlFor="swapMake" className="block text-gray-700 font-medium mb-2">Swap Make</label>
-          <input
-            type="text"
-            id="swapMake"
-            name="swapMake"
-            value={formData.swapMake}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-            placeholder="e.g., Honda"
-          />
-          {errors.swapMake && <p className="text-red-500 text-sm mt-1">{errors.swapMake}</p>}
-        </div>
-        <div>
-          <label htmlFor="swapModel" className="block text-gray-700 font-medium mb-2">Swap Model</label>
-          <input
-            type="text"
-            id="swapModel"
-            name="swapModel"
-            value={formData.swapModel}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-            placeholder="e.g., Civic"
-          />
-          {errors.swapModel && <p className="text-red-500 text-sm mt-1">{errors.swapModel}</p>}
-        </div>
-        <div>
-          <label htmlFor="swapYear" className="block text-gray-700 font-medium mb-2">Swap Year</label>
-          <input
-            type="number"
-            id="swapYear"
-            name="swapYear"
-            value={formData.swapYear}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-            placeholder="e.g., 2015"
-            min="1900"
-            max={new Date().getFullYear()}
-          />
-          {errors.swapYear && <p className="text-red-500 text-sm mt-1">{errors.swapYear}</p>}
-        </div>
-        <div>
-          <label htmlFor="swapMileage" className="block text-gray-700 font-medium mb-2">Swap Mileage</label>
-          <input
-            type="number"
-            id="swapMileage"
-            name="swapMileage"
-            value={formData.swapMileage}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-            placeholder="e.g., 80000"
-            min="0"
-          />
-          {errors.swapMileage && <p className="text-red-500 text-sm mt-1">{errors.swapMileage}</p>}
+      <div className="border border-orange-200 rounded-lg p-6 space-y-4 bg-orange-50">
+        <h4 className="text-lg font-bold text-orange-700 border-b border-orange-200 pb-2">Swap Vehicle Details</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="swapMake" className="block text-gray-700 font-medium mb-2">Swap Make</label>
+              <input
+                type="text"
+                id="swapMake"
+                name="swapMake"
+                value={formData.swapMake}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., Honda"
+              />
+              {errors.swapMake && <p className="text-red-500 text-sm mt-1">{errors.swapMake}</p>}
+            </div>
+            
+            <div>
+              <label htmlFor="swapModel" className="block text-gray-700 font-medium mb-2">Swap Model</label>
+              <input
+                type="text"
+                id="swapModel"
+                name="swapModel"
+                value={formData.swapModel}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., Civic"
+              />
+              {errors.swapModel && <p className="text-red-500 text-sm mt-1">{errors.swapModel}</p>}
+            </div>
+            
+            <div>
+              <label htmlFor="swapYear" className="block text-gray-700 font-medium mb-2">Swap Year</label>
+              <input
+                type="number"
+                id="swapYear"
+                name="swapYear"
+                value={formData.swapYear}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., 2015"
+                min="1900"
+                max={new Date().getFullYear()}
+              />
+              {errors.swapYear && <p className="text-red-500 text-sm mt-1">{errors.swapYear}</p>}
+            </div>
+            
+            <div>
+              <label htmlFor="swapMileage" className="block text-gray-700 font-medium mb-2">Swap Mileage (km)</label>
+              <input
+                type="number"
+                id="swapMileage"
+                name="swapMileage"
+                value={formData.swapMileage}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., 80000"
+                min="0"
+              />
+              {errors.swapMileage && <p className="text-red-500 text-sm mt-1">{errors.swapMileage}</p>}
+            </div>
         </div>
       </div>
     )}
 
+    {/* Timeframe (No Change) */}
     <div>
       <label htmlFor="timeframe" className="block text-gray-700 font-medium mb-2">Desired Timeframe</label>
       <select
@@ -793,7 +873,7 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
         name="timeframe"
         value={formData.timeframe}
         onChange={handleChange}
-        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
       >
         <option value="">Select Timeframe</option>
         <option value="Urgent (within 1-2 weeks)">Urgent (within 1-2 weeks)</option>
@@ -803,32 +883,53 @@ const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, has
       </select>
       {errors.timeframe && <p className="text-red-500 text-sm mt-1">{errors.timeframe}</p>}
     </div>
-
+    
+    {/* 🌟 NEW FIELD: Referral Source 🌟 */}
     <div>
-      <label htmlFor="additionalNotes" className="block text-gray-700 font-medium mb-2">Additional Notes / Specific Features</label>
+      <label htmlFor="referralSource" className="block text-gray-700 font-medium mb-2">How did you hear about us? (Optional)</label>
+      <select
+        id="referralSource"
+        name="referralSource"
+        value={formData.referralSource}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+      >
+        <option value="">Select Source</option>
+        <option value="Google Search">Google Search</option>
+        <option value="Social Media">Social Media (Facebook/Instagram)</option>
+        <option value="Referral/Friend">Referral/Friend</option>
+        <option value="Existing Client">Existing Client</option>
+        <option value="Online Ad">Online Ad</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    {/* Additional Notes (No Change) */}
+    <div>
+      <label htmlFor="additionalNotes" className="block text-gray-700 font-medium mb-2">Additional Notes / Specific Features (Optional)</label>
       <textarea
         id="additionalNotes"
         name="additionalNotes"
         value={formData.additionalNotes}
         onChange={handleChange}
         rows="4"
-        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
         placeholder="Any specific colors, features, or details you're looking for?"
       ></textarea>
     </div>
 
-    <div className="flex justify-between">
+    <div className="flex justify-between pt-4">
       <button
         type="button"
         onClick={prevStep}
-        className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200"
+        className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 transition duration-200"
       >
         Previous
       </button>
       <button
         type="submit"
         onClick={handleSubmit}
-        className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200"
+        className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 transition duration-200"
       >
         Submit Request
       </button>
@@ -925,6 +1026,9 @@ const App = () => {
     swapYear: '', // Changed from tradeInYear
     swapMileage: '', // Changed from tradeInMileage
     timeframe: '',
+    // --- NEW FIELDS ---
+    paymentOption: '', // Initialize new payment field
+    referralSource: '', // Initialize new referral field
     additionalNotes: '',
   });
   const [errors, setErrors] = useState({});
@@ -1103,6 +1207,11 @@ const App = () => {
         newErrors.priceRange = 'Min price cannot be greater than max price.';
         isValid = false;
       }
+       // 🌟 NEW FIELD VALIDATION: Payment Option
+      if (!formData.paymentOption) {
+        newErrors.paymentOption = 'Payment option is required.';
+        isValid = false;
+      }
       if (formData.swap === 'Yes') { // Changed from tradeIn
         if (!formData.swapMake.trim()) { // Changed from tradeInMake
           newErrors.swapMake = 'Swap Make is required.'; // Changed from tradeInMake
@@ -1212,7 +1321,9 @@ const App = () => {
       ));
     }
     if (stepNum === 3) {
-      return errors.minPrice || errors.maxPrice || errors.priceRange || errors.swapMake || errors.swapModel || errors.swapYear || errors.swapMileage || errors.timeframe;
+      return errors.minPrice || errors.maxPrice || errors.priceRange || errors.swapMake || errors.swapModel || errors.swapYear || errors.swapMileage || errors.timeframe ||
+        // 🌟 NEW ERROR CHECK: paymentOption
+        errors.paymentOption;
     }
     return false;
   };
@@ -1292,183 +1403,224 @@ const App = () => {
       <script src="https://cdn.tailwindcss.com"></script>
       {/* Configure Tailwind to use 'Inter' font */}
       <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-          body {
-            font-family: 'Inter', sans-serif;
-          }
-        `}
-      </style>
+      {`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+          font-family: 'Inter', sans-serif;
+        }
+      `}
+    </style>
 
       {/* Header/Navigation Section */}
-      <header className="sticky top-0 z-40 bg-black p-4 sm:p-6">
-        <div className="container mx-auto flex justify-center items-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">9ja Carplug</h1>
-        </div>
-      </header>
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 p-4 sm:p-6">
+  <div className="container mx-auto flex justify-between items-center">
+    {/* 1. Logo (Left) - Using orange accent for the name */}
+    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+      9ja<span className="text-orange-600">CarPlug</span>
+    </h1>
 
-      {/* Client Intake Form Section */}
-      <section id="client-intake" className="py-10 sm:py-16 bg-white px-4">
-        <div className="container mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8 sm:mb-12">Start Your Car Search</h2>
-          <div className="bg-white rounded-lg p-6 sm:p-8 max-w-3xl mx-auto">
-            {submissionSuccess ? (
-              <div className="text-center py-10">
-                <svg className="w-20 h-20 sm:w-24 sm:h-24 text-green-500 mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h3 className="text-2xl sm:text-3xl font-bold text-black mb-3 sm:mb-4">Request Submitted Successfully!</h3>
-                <p className="text-base sm:text-lg text-gray-600">
-                  Thank you for your submission. We will review your request and get back to you shortly with potential matches.
-                </p>
-                <button
-                  onClick={() => { setSubmissionSuccess(false); setCurrentStep(1); setFormData({
-                    name: '', email: '', phone: '+234', whatsappNumber: '+234', // Reset with prefix
-                    carPreferences: [{ ...initialCarPreference }], // Reset to one empty car preference
-                    minPrice: '', maxPrice: '',
-                    swap: 'No', swapMake: '', swapModel: '',
-                    swapYear: '', swapMileage: '', timeframe: '', additionalNotes: '',
-                  }); setIsWhatsappSameAsPhone(false); }} // Reset checkbox state
-                  className="mt-6 sm:mt-8 px-6 sm:px-8 py-2 sm:py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition duration-200 transform hover:scale-105"
-                >
-                  Submit Another Request
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Progress Indicator */}
-                <div className="mb-6 sm:mb-8">
-                  <div className="flex justify-between text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                    <span>Step {currentStep} of 3</span>
-                    <span>{currentStep === 1 ? 'Contact Info' : currentStep === 2 ? 'Vehicle Preferences' : 'Budget & Details'}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-purple-800 h-2 rounded-full transition-all duration-500 ease-in-out"
-                      style={{ width: `${(currentStep / 3) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Render the current step component */}
-                {currentStep === 1 && <StepOne formData={formData} handleChange={handleChange} nextStep={nextStep} errors={errors} hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(1)} setIsWhatsappSameAsPhone={setIsWhatsappSameAsPhone} isWhatsappSameAsPhone={isWhatsappSameAsPhone} />}
-                {currentStep === 2 && (
-                  <StepTwo
-                    formData={formData}
-                    handleChange={handleChange}
-                    handleCarPreferenceChange={handleCarPreferenceChange}
-                    addCarPreference={addCarPreference}
-                    removeCarPreference={removeCarPreference}
-                    nextStep={nextStep}
-                    prevStep={prevStep}
-                    errors={errors}
-                    hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(2)}
-                  />
-                )}
-                {currentStep === 3 && <StepThree formData={formData} handleChange={handleChange} handleSubmit={handleSubmit} prevStep={prevStep} errors={errors} hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(3)} />}
-              </>
-            )}
-          </div>
-        </div>
-      </section>
+    {/* 2. Simple Navigation Links (Right/Centered) */}
+    <nav className="hidden sm:flex space-x-6">
+      {/* Updated hover color to orange-600 */}
+      
+      {/* Primary CTA in the header - using orange-600 button */}
+      <a 
+        href="#client-intake" 
+        className="px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-semibold hover:bg-orange-700 transition duration-200"
+      >
+        Start Search 
+      </a>
+    </nav>
+  </div>
+</header>
 
       {/* Hero Section */}
-      <section id="hero" className="bg-black text-white py-16 sm:py-20 text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-3 sm:mb-4 leading-tight">
-            Your Dream Car, Sourced Effortlessly.
-          </h2>
-          <p className="text-lg sm:text-xl mb-6 sm:mb-8 opacity-90 max-w-3xl mx-auto text-gray-300">
-            Leveraging our network of dealer to find the perfect vehicle for you, without the hassle of traditional car shopping.
-          </p>
-          <a
-            href="#client-intake"
-            onClick={(e) => { e.preventDefault(); scrollToSection('client-intake'); }}
-            className="inline-block px-8 sm:px-10 py-3 sm:py-4 bg-white  text-black font-bold text-base sm:text-lg rounded-lg hover:bg-gray-900 transform hover:scale-105 transition duration-300 ease-in-out"
-          >
-            Start Your Search Today!
-          </a>
+      <section 
+  id="hero" 
+  className="py-24 sm:py-32 text-center relative overflow-hidden border-b border-gray-700" 
+  style={{
+    // **CRITICAL: REPLACE 'YOUR_IMAGE_URL_HERE' with your actual image URL**
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('YOUR_IMAGE_URL_HERE')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed' // Optional: Adds a parallax effect
+  }}
+>
+  {/* The container holds the text and keeps it centered */}
+  <div className="container mx-auto px-4 relative z-10 text-white">
+    {/* Title: Changed text color to white, kept orange accent */}
+    <h2 className="text-5xl sm:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight max-w-4xl mx-auto text-white">
+      The Modern Way to Source Your <span className="text-orange-500">Perfect Car.</span>
+    </h2>
+    {/* Subtitle: Lighter gray for readability over the dark overlay */}
+    <p className="text-xl sm:text-2xl mb-8 sm:mb-10 text-gray-300 max-w-3xl mx-auto">
+      [cite_start]Get a dedicated broker to find, negotiate, and secure your next vehicle from a network of trusted dealers. [cite: 184, 185]
+    </p>
+    {/* CTA Button: Updated to use the primary orange color */}
+    <a
+      href="#client-intake"
+      onClick={(e) => { e.preventDefault(); scrollToSection('client-intake'); }}
+      className="inline-block px-10 sm:px-12 py-4 sm:py-5 bg-orange-600 text-white font-bold text-lg sm:text-xl rounded-full hover:bg-orange-700 transition duration-300 ease-in-out transform hover:scale-[1.03] focus:ring-4 focus:ring-orange-300 focus:ring-offset-2"
+    >
+      Start Your Free Request
+    </a>
+  </div>
+</section>
+
+      {/* Client Intake Form Section */}
+      <section id="client-intake" className="py-16 sm:py-24 bg-gray-50 px-4">
+    <div className="container mx-auto">
+        {/* Title: Using the new bold orange style */}
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10">
+            Your Custom Vehicle Request
+        </h2>
+        
+        {/* Form Card Wrapper: Larger card, subtle shadow, and border */}
+        <div className="bg-white rounded-xl p-8 sm:p-12 max-w-4xl mx-auto shadow-xl shadow-gray-200/50 border border-gray-100">
+            
+            {submissionSuccess ?
+            ( // Success Message Update
+                <div className="text-center py-10">
+                    {/* SVG Icon: Updated to use primary orange color */}
+                    <svg className="w-20 h-20 sm:w-24 sm:h-24 text-orange-600 mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Request Submitted Successfully!</h3>
+                    <p className="text-base sm:text-lg text-gray-600">
+                        [cite_start]Thank property is not an attribute of the response object in the provided file content. you for your submission. A dedicated broker will contact you shortly. [cite: 189]
+                    </p>
+                    {/* Button: Updated to use the primary orange color */}
+                    <button
+                        onClick={() => { 
+                            setSubmissionSuccess(false); setCurrentStep(1); 
+                            setFormData({
+                                name: '', email: '', phone: '+234', whatsappNumber: '+234', 
+                                carPreferences: [{ ...initialCarPreference }], 
+                                minPrice: '', maxPrice: '',
+                                swap: 'No', swapMake: '', swapModel: '',
+                                swapYear: '', swapMileage: '', timeframe: '', additionalNotes: '', 
+                            });
+                            setIsWhatsappSameAsPhone(false);
+                        }} 
+                        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition duration-200 transform hover:scale-[1.03]"
+                    >
+                        Submit Another Request
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {/* Progress Indicator */}
+                    <div className="mb-8">
+                        <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
+                            <span>Step {currentStep} of 3</span>
+                            {/* Text accent color changed to orange */}
+                            <span className="text-orange-600">{currentStep === 1 ? 'Contact Info' : currentStep === 2 ? 'Vehicle Preferences' : 'Budget & Details'}</span>
+                        </div>
+                        {/* Progress Bar: Thicker bar, using orange accent */}
+                        <div className="w-full bg-gray-200 rounded-full h-3"> 
+                            <div
+                                className="bg-orange-600 h-3 rounded-full transition-all duration-500 ease-in-out"
+                                style={{ width: `${(currentStep / 3) * 100}%` }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* The rest of the Steps will be inserted here */}
+                    {currentStep === 1 && <StepOne formData={formData} handleChange={handleChange} nextStep={nextStep} errors={errors} hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(1)} setIsWhatsappSameAsPhone={setIsWhatsappSameAsPhone} isWhatsappSameAsPhone={isWhatsappSameAsPhone} />}
+                    {currentStep === 2 && (
+                        <StepTwo
+                            formData={formData}
+                            handleChange={handleChange}
+                            handleCarPreferenceChange={handleCarPreferenceChange}
+                            addCarPreference={addCarPreference}
+                            removeCarPreference={removeCarPreference}
+                            nextStep={nextStep}
+                            prevStep={prevStep}
+                            errors={errors}
+                            hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(2)}
+                        />
+                    )}
+                    {currentStep === 3 && <StepThree formData={formData} handleChange={handleChange} handleSubmit={handleSubmit} prevStep={prevStep} errors={errors} hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(3)} />}
+                </>
+            )}
         </div>
-      </section>
+    </div>
+</section>
 
       {/* Available Cars Section */}
-      <section id="available-cars" className="py-16 bg-white rounded-lg mx-4 my-8">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10 sm:mb-12">Cars Available For Sale</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-            {availableCars.map((car) => (
-              <div key={car.id} className="bg-white rounded-lg overflow-hidden shadow-md border border-black hover:shadow-lg hover:border-purple-500 transition-all duration-300 transform hover:-translate-y-1"> {/* Changed rounded-xl to rounded-lg */}
-                <img
-                  src={car.imageUrl}
-                  alt={`${car.make} ${car.model}`}
-                  className="w-full h-40 sm:h-48 object-cover"
-                  onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x250/E0E7FF/3B82F6?text=Car+Image`; }}
-                />
-                <div className="p-6 sm:p-8">
-                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">{car.make} {car.model}</h3>
-                  <p className="text-gray-600 text-sm sm:text-base mb-1">Year: {car.year}</p>
-                  <p className="text-lg sm:text-xl font-bold text-purple-800 mb-3 sm:mb-4">{car.price}</p>
-                  <button
-                    onClick={() => openCarDetailModal(car)}
-                    className="mt-2 sm:mt-4 w-full px-4 sm:px-6 py-2 sm:py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition duration-200 transform hover:scale-105"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 bg-white rounded-lg mx-4 mt-8">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10 sm:mb-12">How Our Brokerage Works</h2>
-          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
-            {/* Step 1 */}
-            <div className="text-center p-6 bg-white rounded-lg hover:border-purple-300 transition duration-300 transform hover:-translate-y-1">
-              <div className="bg-purple-100 text-purple-800 rounded-full w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4 text-2xl sm:text-3xl font-bold">
-                1
-              </div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-gray-800">Tell Us Your Needs</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Fill out our simple intake form with your desired vehicle, budget, and preferences.
-              </p>
+{/* How It Works Section */}
+<section id="how-it-works" className="py-16 sm:py-24 bg-white">
+    <div className="container mx-auto px-4">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-16">How Our Brokerage Works</h2>
+        
+        {/* New Layout: Large cards in a two-column responsive grid */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+            
+            {/* Step 1 & 2 Card (Full Width on Small Screens) */}
+            <div className="space-y-8">
+                {/* Step 1 */}
+                <div className="flex p-6 bg-gray-50 rounded-xl shadow-lg border-l-4 border-orange-600 transition duration-300 hover:shadow-xl">
+                    <div className="flex-shrink-0 mr-4">
+                        <div className="bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold">
+                            1
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-semibold mb-1 text-gray-900">Tell Us Your Needs</h3>
+                        <p className="text-gray-700">
+                            Fill out our simple intake form with your desired vehicle, budget, and preferences.
+                        </p>
+                    </div>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="flex p-6 bg-gray-50 rounded-xl shadow-lg border-l-4 border-orange-600 transition duration-300 hover:shadow-xl">
+                    <div className="flex-shrink-0 mr-4">
+                        <div className="bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold">
+                            2
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-semibold mb-1 text-gray-900">We Source & Negotiate</h3>
+                        <p className="text-gray-700">
+                            We tap into our extensive dealer network to find the best matches and negotiate on your behalf.
+                        </p>
+                    </div>
+                </div>
             </div>
-            {/* Step 2 */}
-            <div className="text-center p-6 bg-white rounded-lg hover:border-purple-300 transition duration-300 transform hover:-translate-y-1">
-              <div className="bg-purple-100 text-purple-800 rounded-full w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4 text-2xl sm:text-3xl font-bold">
-                2
-              </div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-gray-800">We Source & Negotiate</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
-                We tap into our extensive dealer network to find the best matches and negotiate on your behalf.
-              </p>
+
+            {/* Step 3 Card (Takes up one column) */}
+            <div className="p-8 bg-orange-600 text-white rounded-xl shadow-2xl flex flex-col justify-center">
+                <div className="flex items-center mb-4">
+                    <div className="bg-white text-orange-600 rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+                        3
+                    </div>
+                    <h3 className="text-3xl font-bold ml-4">Drive Away Happy!</h3>
+                </div>
+                <p className="text-lg opacity-90">
+                    Review the final options presented by your broker, make your choice, and finalize the purchase directly with the trusted dealer. We handle the hard work, so you can enjoy the drive.
+                </p>
             </div>
-            {/* Step 3 */}
-            <div className="text-center p-6 bg-white rounded-lg hover:border-purple-300 transition duration-300 transform hover:-translate-y-1">
-              <div className="bg-purple-100 text-purple-800 rounded-full w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4 text-2xl sm:text-3xl font-bold">
-                3
-              </div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3 text-gray-800">Drive Away Happy!</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Review the options, make your choice, and finalize the purchase directly with the dealer.
-              </p>
-            </div>
-          </div>
+            
         </div>
-      </section>
+        {/* End New Layout */}
+    </div>
+</section>
 
       {/* Footer Section */}
-      <footer className="bg-black text-white py-6 sm:py-8 ">
-        <div className="container mx-auto text-center px-4">
-          <p className="text-sm sm:text-base">&copy; {new Date().getFullYear()} CarSource Pro. All rights reserved.</p>
-          <p className="mt-1 sm:mt-2 text-xs sm:text-sm opacity-80">
-            Disclaimer: We are an auto brokerage service connecting buyer with dealers.
-          </p>
-        </div>
-      </footer>
+      <footer className="bg-white text-white py-8 sm:py-10 ">
+  <div className="container mx-auto text-center px-4">
+    <p className="text-sm sm:text-base opacity-90 text-black">&copy;
+      {new Date().getFullYear()} 9ja<span className="text-orange-600">CarPlug</span>. All rights reserved.
+    </p>
+    <p className="mt-2 text-xs sm:text-sm text-gray-400">
+      Disclaimer: We are an auto brokerage service connecting buyers with dealers.
+    </p>
+  </div>
+</footer>
 
       {/* Car Detail Modal */}
       {showCarDetailModal && (
