@@ -1040,10 +1040,7 @@ const App = () => {
   const [selectedCarForModal, setSelectedCarForModal] = useState(null);
 
   // Function to open the modal with specific car details
-  const openCarDetailModal = (car) => {
-    setSelectedCarForModal(car);
-    setShowCarDetailModal(true);
-  };
+  
 
   // Function to close the modal
   const closeCarDetailModal = () => {
@@ -1329,64 +1326,7 @@ const App = () => {
   };
 
   // Sample car data for display
-  const availableCars = [
-    {
-      id: 1,
-      make: 'Toyota',
-      model: 'Camry',
-      year: 2020,
-      price: '₦12,500,000',
-      imageUrl: 'https://pictures-nigeria.jijistatic.net/165457709_MzAwLTIyNS04NjA4ZTQxNTMx.webp',
-      condition: 'Tokunbo (Imported Used)',
-      mileage: '55,000 km',
-      fuelType: 'Petrol',
-      transmissionType: 'Automatic',
-      bodyStyle: 'Sedan',
-      features: ['Backup Camera/Parking Sensors', 'Bluetooth Connectivity'],
-    },
-    {
-      id: 2,
-      make: 'Honda',
-      model: 'CR-V',
-      year: 2018,
-      price: '₦10,800,000',
-      imageUrl: 'https://pictures-nigeria.jijistatic.net/174879961_MzAwLTIyNS1hMGFkNjcyNDlm.webp',
-      condition: 'Nigeria Used',
-      mileage: '80,000 km',
-      fuelType: 'Petrol',
-      transmissionType: 'Automatic',
-      bodyStyle: 'SUV',
-      features: ['Leather Seats', 'Sunroof/Moonroof'],
-    },
-    {
-      id: 3,
-      make: 'Mercedes-Benz',
-      model: 'C-Class',
-      year: 2021,
-      price: '₦25,000,000',
-      imageUrl: 'https://pictures-nigeria.jijistatic.net/177637811_MzAwLTIyNS1jZWZlZGUwZTlh.webp',
-      condition: 'Brand New',
-      mileage: '500 km',
-      fuelType: 'Petrol',
-      transmissionType: 'Automatic',
-      bodyStyle: 'Sedan',
-      features: ['Navigation System', 'Apple CarPlay/Android Auto', 'Heated Seats'],
-    },
-    {
-      id: 4,
-      make: 'Honda',
-      model: 'Accord',
-      year: 2013,
-      price: '₦15,000,000',
-      imageUrl: 'https://pictures-nigeria.jijistatic.net/171636089_OTc3LTEwODAtYjMxMTYxNjMzMS0x.webp',
-      condition: 'Tokunbo (Imported Used)',
-      mileage: '70,000 km',
-      fuelType: 'Petrol',
-      transmissionType: 'Automatic',
-      bodyStyle: 'Sedan',
-      features: ['All-Wheel Drive (AWD) / 4x4', 'Backup Camera/Parking Sensors'],
-    },
-  ];
+  
 
   // Function to handle smooth scrolling to sections
   const scrollToSection = (id) => {
