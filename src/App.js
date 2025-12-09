@@ -1,820 +1,1573 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-// --- CONFIGURATION CONSTANTS ---
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgvzwray'; 
-const PAYSTACK_PUBLIC_KEY = 'pk_live_2ba1413aaaf5091188571ea6f87cca34945d943c'; 
-const SHOPPING_TYPES = [
-    'General Groceries', 
-    'Electronics/Gadgets', 
-    'Apparel/Fashion', 
-    'Pharmaceuticals/Wellness',
-    'Office/Home Supplies', 
-    'Hardware/Tools', 
-    'Mixed Basket'
-];
-
-// --- FEES CONSTANTS ---
-const BASE_SHOPPER_FEE = 10000;
-const SERVICE_FEE_RATE = 0.10; // 10%
-
-// LAGOS TRANSPORT FEE PRICE LIST
-const LAGOS_TRANSPORT_FEES = {
-    'select': 0,
-    'Lagos Mainland - Yaba/Surulere (Zone 1)': 2500,
-    'Lagos Mainland - Ikeja/Maryland (Zone 2)': 3500,
-    'Lagos Mainland - Agege/Ogba (Zone 3)': 4500,
-    'Lagos Island - Lekki Phase 1/Ikoyi (Zone 1)': 3000,
-    'Lagos Island - V.I./Ajah (Zone 2)': 4000,
-    'Lagos Outskirts - Ikorodu/Badagry': 6000,
-    'Other Location (Quote Later)': 0,
+// Define the car data globally or within App component
+// Each model now includes its common body style
+const carData = {
+  Toyota: {
+    Camry: "Sedan", Corolla: "Sedan", RAV4: "SUV", Highlander: "SUV", Sienna: "Minivan",
+    Tacoma: "Truck", Tundra: "Truck", Prado: "SUV", "Land Cruiser": "SUV"
+  },
+  Honda: {
+    Civic: "Sedan", Accord: "Sedan", "CR-V": "SUV", Pilot: "SUV", Odyssey: "Minivan",
+    Ridgelin: "Truck"
+  },
+  'Mercedes-Benz': {
+    "C-Class": "Sedan", "E-Class": "Sedan", "S-Class": "Sedan", GLC: "SUV", GLE: "SUV",
+    "G-Class": "SUV", "A-Class": "Sedan"
+  },
+  BMW: {
+    "3 Series": "Sedan", "5 Series": "Sedan", "7 Series": "Sedan", X1: "SUV", X3: "SUV",
+    X5: "SUV", X7: "SUV"
+  },
+  Ford: {
+    "F-150": "Truck", Explorer: "SUV", Escape: "SUV", Mustang: "Coupe", Focus: "Hatchback",
+    Edge: "SUV", Ranger: "Truck"
+  },
+  Nissan: {
+    Altima: "Sedan", Maxima: "Sedan", Rogue: "SUV", Titan: "Truck", Sentra: "Sedan",
+    Pathfinder: "SUV", Murano: "SUV"
+  },
+  Hyundai: {
+    Elantra: "Sedan", Sonata: "Sedan", Tucson: "SUV", "Santa Fe": "SUV", Kona: "SUV",
+    Palisade: "SUV"
+  },
+  Kia: {
+    Forte: "Sedan", K5: "Sedan", Sportage: "SUV", Sorento: "SUV", Telluride: "SUV",
+    Rio: "Hatchback"
+  },
+  Volkswagen: {
+    Jetta: "Sedan", Passat: "Sedan", Tiguan: "SUV", Atlas: "SUV", Golf: "Hatchback"
+  },
+  Audi: {
+    A3: "Sedan", A4: "Sedan", A6: "Sedan", Q3: "SUV", Q5: "SUV", Q7: "SUV"
+  },
+  Lexus: {
+    ES: "Sedan", RX: "SUV", GX: "SUV", LS: "Sedan", NX: "SUV", LX: "SUV"
+  },
+  Chevrolet: {
+    Silverado: "Truck", Equinox: "SUV", Malibu: "Sedan", Traverse: "SUV", Tahoe: "SUV",
+    Camaro: "Coupe"
+  },
+  Porsche: {
+    "911": "Coupe", Cayenne: "SUV", Panamera: "Sedan", Macan: "SUV", Taycan: "Sedan"
+  },
+  'Land Rover': {
+    "Range Rover": "SUV", Discovery: "SUV", Defender: "SUV", Evoque: "SUV", Velar: "SUV"
+  },
+  Jeep: {
+    Wrangler: "SUV", "Grand Cherokee": "SUV", Cherokee: "SUV", Renegade: "SUV", Compass: "SUV"
+  },
+  Subaru: {
+    Outback: "SUV", Forester: "SUV", Impreza: "Sedan", Crosstrek: "SUV", Legacy: "Sedan"
+  },
+  Mazda: {
+    Mazda3: "Sedan", Mazda6: "Sedan", "CX-5": "SUV", "CX-9": "SUV", "MX-5 Miata": "Convertible"
+  },
+  Volvo: {
+    S60: "Sedan", S90: "Sedan", XC40: "SUV", XC60: "SUV", XC90: "SUV"
+  },
+  Tesla: {
+    "Model 3": "Sedan", "Model S": "Sedan", "Model X": "SUV", "Model Y": "SUV", Cybertruck: "Truck"
+  },
+  Peugeot: {
+    "308": "Hatchback", "508": "Sedan", "2008": "SUV", "3008": "SUV", "5008": "SUV"
+  },
+  'Mercedes-Benz Trucks': {
+    Actros: "Truck", Arocs: "Truck", Atego: "Truck"
+  },
+  Man: {
+    TGX: "Truck", TGS: "Truck", TGM: "Truck"
+  },
+  DAF: {
+    XF: "Truck", CF: "Truck", LF: "Truck"
+  },
+  Scania: {
+    "R-series": "Truck", "S-series": "Truck", "G-series": "Truck"
+  },
+  'Volvo Trucks': {
+    FH: "Truck", FM: "Truck", FMX: "Truck"
+  },
+  'Renault Trucks': {
+    "T-range": "Truck", "C-range": "Truck", "K-range": "Truck"
+  },
+  Iveco: {
+    Daily: "Truck", Eurocargo: "Truck", Stralis: "Truck"
+  },
+  Hino: {
+    "300 Series": "Truck", "500 Series": "Truck", "700 Series": "Truck"
+  },
+  Isuzu: {
+    "D-Max": "Truck", "N-Series": "Truck", "F-Series": "Truck"
+  },
+  'Ford Trucks': {
+    Cargo: "Truck", Transit: "Van"
+  },
 };
 
-// PRIORITY FEES
-const PRIORITY_FEES = {
-    'standard': 0,
-    'priority': 5000,
-};
 
-// EMERGENCY CONTACT for general support (in footer)
-const EMERGENCY_CONTACT_NUMBER = '0800-SHOPPER'; 
+// Component for Step 1: Contact Information
+// Component for Step 1: Contact Information
+const StepOne = ({ formData, handleChange, nextStep, errors, hasErrorsForCurrentStep, setIsWhatsappSameAsPhone, isWhatsappSameAsPhone }) => {
 
-// --- HELPER COMPONENT: Input Field Abstraction ---
-const FormInput = (props) => (
-    <input
-        {...props}
-        // Reduced padding for a tighter feel
-        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition duration-150 placeholder-gray-500 text-sm"
-    />
-);
+  const handlePhoneInputChange = (e) => {
+    let value = e.target.value;
+    const name = e.target.name;
 
-// --- COMPONENT 1: The Dynamic Shopping List Item (Updated with Budget) ---
-const ShoppingListItem = ({ index, item, onChange, onRemove, showBudgetError }) => {
-    return (
-        <div className="flex flex-col gap-2 mb-3 p-3 bg-white rounded-xl shadow-md border border-gray-100 items-start">
-            {/* Item Name and Remove Button: Reduced gap */}
-            <div className='flex w-full gap-2'>
-                {/* Item Name Input */}
-                <input
-                    type="text"
-                    name={`list[${index}][item]`}
-                    placeholder="E.g., Laptop charger, Tomatoes" 
-                    value={item.item}
-                    onChange={(e) => onChange(index, 'item', e.target.value)}
-                    className="flex-grow w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-sm"
-                    required
-                />
-                {/* Remove Button - Reduced padding/size */}
-                <button
-                    type="button"
-                    onClick={() => onRemove(index)}
-                    className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-150 flex-shrink-0 font-semibold text-xs"
-                >
-                    X
-                </button>
-            </div>
-
-            {/* Quantity, Unit, and Budget: Reduced gap */}
-            <div className='flex w-full gap-2 items-center'>
-                {/* Quantity Input (w-1/3) */}
-                <div className='w-1/3 min-w-0'>
-                    <input
-                        type="number"
-                        name={`list[${index}][quantity]`}
-                        placeholder="Qty"
-                        value={item.quantity}
-                        onChange={(e) => onChange(index, 'quantity', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-orange-500 text-sm"
-                        required
-                    />
-                </div>
-                
-                {/* Unit Select (w-1/3) */}
-                <div className='w-1/3 min-w-0'>
-                    <select
-                        name={`list[${index}][unit]`}
-                        value={item.unit}
-                        onChange={(e) => onChange(index, 'unit', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-white text-sm"
-                        required
-                    >
-                        <option value="pcs">Pcs</option>
-                        <option value="kg">kg</option>
-                        <option value="bags">Bags</option>
-                        <option value="crates">Crates</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                {/* Budget Input (w-1/3) */}
-                <div className='w-1/3 min-w-0'>
-                    <input
-                        type="number"
-                        name={`list[${index}][budget]`}
-                        placeholder="Budget"
-                        value={item.budget || ''}
-                        onChange={(e) => onChange(index, 'budget', e.target.value)}
-                        className={`w-full p-2 border rounded-lg text-center focus:ring-2 focus:ring-orange-500 text-sm ${showBudgetError && (!item.budget || Number(item.budget) <= 0) ? 'border-red-500 ring-red-300' : 'border-gray-300'}`}
-                        min="0"
-                    />
-                </div>
-            </div>
-            {showBudgetError && (!item.budget || Number(item.budget) <= 0) && (
-                <p className='text-xs text-red-500 mt-1'>* Budget is required for Instant Payment mode.</p>
-            )}
-        </div>
-    );
-};
-
-// --- COMPONENT 2: The Main Order Form & List Builder (Refactored) ---
-const OrderForm = ({ navigate }) => {
-    const [clientInfo, setClientInfo] = useState({ name: '', phone: '', email: '', address: '' });
-    const [shoppingList, setShoppingList] = useState([{ item: '', quantity: '', unit: 'pcs', budget: '' }]);
-    const [shoppingType, setShoppingType] = useState(SHOPPING_TYPES[0]);
-    const [deliveryTime, setDeliveryTime] = useState('');
-    const [selectedZone, setSelectedZone] = useState('select'); 
-    const [selectedPriority, setSelectedPriority] = useState('standard'); 
-    const [pricingMode, setPricingMode] = useState('quote'); 
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showBudgetError, setShowBudgetError] = useState(false);
-    // NEW STATES FOR EMERGENCY CONTACT
-    const [emergencyName, setEmergencyName] = useState(''); 
-    const [emergencyPhone, setEmergencyPhone] = useState(''); 
-
-    // Calculate the total budget for goods
-    const totalBudget = useMemo(() => {
-        return shoppingList.reduce((total, item) => {
-            const budget = Number(item.budget) || 0;
-            return total + budget;
-        }, 0);
-    }, [shoppingList]);
-    
-    // Calculate the final cost details including fees
-    const finalCostDetails = useMemo(() => {
-        const shoppingListTotal = totalBudget; // Cost of goods
-        const shopperFee = BASE_SHOPPER_FEE; // 10,000 NGN fixed fee
-        const serviceFee = shoppingListTotal * SERVICE_FEE_RATE; // 10% of goods total
-        
-        // Find transport fee based on the selected zone
-        const transportFee = LAGOS_TRANSPORT_FEES[selectedZone] || 0;
-        
-        // Calculate Priority Fee
-        const priorityFee = PRIORITY_FEES[selectedPriority] || 0;
-        
-        // Include priority fee in subtotal
-        const subtotal = shoppingListTotal + shopperFee + serviceFee + transportFee + priorityFee; 
-        
-        return {
-            shoppingListTotal: shoppingListTotal,
-            shopperFee: shopperFee,
-            serviceFee: serviceFee,
-            transportFee: transportFee,
-            priorityFee: priorityFee, 
-            finalAmount: Math.ceil(subtotal), // Round up for clean payment amount
-        };
-    }, [totalBudget, selectedZone, selectedPriority]); 
-    
-    const finalAmount = finalCostDetails.finalAmount; // Total amount to be paid
-    
-    const handleClientChange = (e) => {
-        setClientInfo({ ...clientInfo, [e.target.name]: e.target.value });
-    };
-
-    const handleListItemChange = (index, field, value) => {
-        const newShoppingList = shoppingList.map((item, i) => {
-            if (i === index) {
-                return { ...item, [field]: value };
-            }
-            return item;
-        });
-        setShoppingList(newShoppingList);
-        setShowBudgetError(false); // Clear error on change
-    };
-
-    const handleAddItem = () => {
-        setShoppingList([...shoppingList, { item: '', quantity: '', unit: 'pcs', budget: '' }]);
-    };
-
-    const handleRemoveItem = (index) => {
-        setShoppingList(shoppingList.filter((_, i) => i !== index));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (isSubmitting) return;
-
-        // General validation
-        if (shoppingList.length === 0 || shoppingList.some(item => !item.item || !item.quantity)) {
-            alert("Please add at least one item with a quantity and name.");
-            return;
-        }
-
-        // Pricing Mode Specific Validation
-        if (pricingMode === 'budget') {
-            const missingBudget = shoppingList.some(item => !item.budget || Number(item.budget) <= 0);
-            
-            // Transport fee validation: Check if a zone is selected
-            if (selectedZone === 'select' || finalCostDetails.transportFee === 0) {
-                 alert("For Instant Payment, please select a Delivery Location Zone to calculate transport fee.");
-                 return;
-            }
-
-            if (missingBudget || totalBudget <= 0) {
-                setShowBudgetError(true);
-                alert("For Instant Payment, you must set a positive budget for *all* items.");
-                return;
-            }
-            
-            if (finalAmount <= 0) {
-                alert("The total final amount must be greater than zero to proceed with instant payment.");
-                return;
-            }
-            
-            // --- INSTANT PAYMENT MODE LOGIC ---
-            // Navigate directly to payment page with calculated total amount
-            navigate('payment', { 
-                email: clientInfo.email, 
-                amount: finalAmount, // Use final calculated amount
-            });
-
-            // Set a successful submission message for this flow before navigating
-            setIsSubmitted(true); 
-
-        } else {
-            // --- SHOPPER SOURCED PRICE MODE LOGIC (Quote Later) ---
-            setIsSubmitting(true);
-            
-            // Programmatically submit the form (Formspree will handle the email)
-            const form = e.target;
-            const formData = new FormData(form);
-
-            // Add non-form-bound states and fee details for Quote Later mode
-            formData.append('Pricing Mode', 'Shopper Sourced Quote');
-            formData.append('Shopping Type', shoppingType);
-            formData.append('Delivery Time', deliveryTime);
-            formData.append('Delivery Zone Estimate', selectedZone);
-            formData.append('Delivery Priority', selectedPriority === 'priority' ? `Priority (+NGN ${PRIORITY_FEES.priority.toLocaleString()})` : 'Standard'); 
-            
-            // ADD NEW EMERGENCY CONTACT FIELDS TO SUBMISSION
-            formData.append('Emergency Contact Name', emergencyName || 'N/A');
-            formData.append('Emergency Contact Phone', emergencyPhone || 'N/A');
-
-            // Include a note about fees for the shopper
-            formData.append('Shopper Note on Fees', `Base Fee: NGN ${BASE_SHOPPER_FEE.toLocaleString()}, Service Rate: ${SERVICE_FEE_RATE * 100}%`);
-            
-            fetch(form.action, {
-                method: form.method,
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            }).then(response => {
-                if (response.ok) {
-                    setIsSubmitted(true);
-                } else {
-                    response.json().then(data => {
-                        if (Object.hasOwn(data, 'errors')) {
-                            alert(data["errors"].map(error => error["message"]).join(", "));
-                        } else {
-                            alert("Oops! There was an error submitting your list.");
-                        }
-                    })
-                }
-            }).catch(error => {
-                alert("Oops! Network error.");
-            }).finally(() => {
-                setIsSubmitting(false);
-            });
-        }
-    };
-    
-    // Success message logic remains the same (reduced py- and mt- for compactness)
-    if (isSubmitted) {
-        if (pricingMode === 'budget') {
-            return (
-                <div className="container mx-auto py-12 px-4 text-center bg-white rounded-xl shadow-2xl max-w-2xl mt-6">
-                    <h2 className="text-3xl font-extrabold text-green-600 mb-3">Redirecting to Payment...</h2>
-                    <p className="text-lg text-gray-700">Your total of **NGN {finalAmount.toLocaleString()}** is ready for instant payment (includes all fees).</p>
-                </div>
-            );
-        }
-
-        // Quote Later success message
-        return (
-             <div className="container mx-auto py-12 px-4 text-center bg-white rounded-xl shadow-2xl max-w-2xl mt-6">
-                 <h2 className="text-3xl font-extrabold text-orange-600 mb-3">✅ List Received!</h2>
-                 <p className="text-lg text-gray-700">Thank you, <span className="font-semibold">{clientInfo.name}</span>. Your list is now with your shopper.</p>
-                 <p className="mt-4 text-base text-gray-600 border-t pt-3">We will contact you at <span className="font-mono text-green-700">{clientInfo.phone}</span> with the final quote (including fees and transport) shortly.</p>
-                 <button 
-                     onClick={() => navigate('payment')}
-                     className="mt-6 bg-green-600 text-white text-base font-semibold py-2 px-6 rounded-xl hover:bg-green-700 transition duration-300 shadow-xl"
-                 >
-                     Go to Payment Page (for manual payment)
-                 </button>
-             </div>
-        );
+    // Ensure it always starts with +234
+    if (!value.startsWith('+234')) {
+      value = '+234' + value.replace(/[^0-9]/g, '').substring(3);
+    } else {
+      value = '+234' + value.substring(4).replace(/[^0-9]/g, '');
     }
 
-    return (
-        <form onSubmit={handleSubmit} action={FORMSPREE_ENDPOINT} method="POST">
-            {/* Reduced overall container padding */}
-            <div className="max-w-4xl mx-auto bg-white p-4 md:p-8 rounded-3xl shadow-2xl border border-gray-100">
-                
-                {/* Section 1: Delivery Details & Preferences */}
-                <h2 className="text-xl font-extrabold text-gray-800 mb-4 border-b-2 border-orange-100 pb-2">1. Delivery Details & Preferences</h2>
-                
-                {/* Reduced gap- and mb- */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-                    <FormInput type="text" name="name" placeholder="Your Full Name" value={clientInfo.name} onChange={handleClientChange} required />
-                    <FormInput type="tel" name="phone" placeholder="Contact Phone Number" value={clientInfo.phone} onChange={handleClientChange} required />
-                    <FormInput type="email" name="email" placeholder="Email Address (For receipt & Paystack)" value={clientInfo.email} onChange={handleClientChange} required /> 
-                    
-                    {/* Address/Location Input Field */}
-                    <div>
-                        <label className='block text-xs font-medium text-gray-700 mb-1'>Delivery Street Address (Detailed)</label>
-                        <FormInput 
-                            type="text" 
-                            name="address" 
-                            placeholder="Street number, building name, landmark" 
-                            value={clientInfo.address} 
-                            onChange={handleClientChange} 
-                            required 
-                        />
-                    </div>
-                    
-                    {/* Preferred Delivery Time */}
-                    <div>
-                        <label className='block text-xs font-medium text-gray-700 mb-1'>Preferred Delivery Time</label>
-                        <FormInput type="text" name="deliveryTime" placeholder="E.g., Tomorrow 2pm-5pm or ASAP" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} required />
-                    </div>
+    if (value === '+234' && e.target.value.length < 4) {
+      value = '+234';
+    }
 
-                    {/* Type of Shopping */}
-                    <div>
-                        <label className='block text-xs font-medium text-gray-700 mb-1'>Type of Shopping</label>
-                        <select
-                            name="shoppingType"
-                            value={shoppingType}
-                            onChange={(e) => setShoppingType(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-white text-sm"
-                            required
-                        >
-                            {SHOPPING_TYPES.map(type => (
-                                <option key={type} value={type}>{type}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+    handleChange({ target: { name, value } });
+    // If WhatsApp is set to be same as phone, update it too
+    if (isWhatsappSameAsPhone && name === 'phone') {
+      handleChange({ target: { name: 'whatsappNumber', value } });
+    }
+  };
 
-                {/* NEW: Alternative Contact Section */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pt-3 border-t border-gray-100'>
-                    <div className='sm:col-span-2'>
-                        <h3 className='text-sm font-extrabold text-orange-600 mb-2'>
-                            Alternative/Emergency Contact (In case the primary client is unreachable)
-                        </h3>
-                    </div>
-                    <FormInput 
-                        type="text" 
-                        name="emergencyName" 
-                        placeholder="Alternative Contact Full Name (Optional)" 
-                        value={emergencyName} 
-                        onChange={(e) => setEmergencyName(e.target.value)} 
-                    />
-                    <FormInput 
-                        type="tel" 
-                        name="emergencyPhone" 
-                        placeholder="Alternative Contact Phone (Optional)" 
-                        value={emergencyPhone} 
-                        onChange={(e) => setEmergencyPhone(e.target.value)} 
-                    />
-                </div>
-                
-                {/* Delivery Priority and Zone (in a 2-column layout now) */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pt-3 border-t border-gray-100'>
-                    {/* Delivery Priority Select */}
-                    <div>
-                        <label className='block text-xs font-medium text-gray-700 mb-1'>Delivery Priority</label>
-                        <select
-                            name="deliveryPriority"
-                            value={selectedPriority}
-                            onChange={(e) => setSelectedPriority(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-white text-sm"
-                        >
-                            <option value="standard">Standard (NGN 0)</option>
-                            <option value="priority">Priority (NGN 5,000)</option>
-                        </select>
-                        <p className='text-xs text-gray-500 mt-1'>
-                            Priority offers the fastest available shopper dispatch and delivery.
-                        </p>
-                    </div>
+  const handleWhatsappCheckboxChange = (e) => {
+    const checked = e.target.checked;
+    setIsWhatsappSameAsPhone(checked);
+    if (checked) {
+      handleChange({ target: { name: 'whatsappNumber', value: formData.phone } });
+    } else {
+      handleChange({ target: { name: 'whatsappNumber', value: '+234' } }); // Reset or clear
+    }
+  };
+  
+  return (
+    <div className="space-y-6">
+      {/* Error Banner: Updated background/text color for better contrast */}
+      {hasErrorsForCurrentStep() && (
+        <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-6" role="alert">
+          <strong className="font-bold">Oops!</strong>
+          <span className="block sm:inline ml-2">Please correct the errors below to proceed.</span>
+        </div>
+      )}
+      {/* Step Title: Using the accent color */}
+      <h3 className="text-3xl font-bold text-orange-600 mb-6">Step 1: Your Contact Information</h3>
+      <p className="text-gray-600 mb-6">Let us know how to reach you.</p>
 
-                    {/* Delivery Location Zone Select (Mandatory for Instant Pay) */}
-                    <div>
-                        <label className={`block text-xs font-medium text-gray-700 mb-1 ${pricingMode === 'budget' ? 'text-red-600 font-extrabold' : ''}`}>
-                            {pricingMode === 'budget' ? '* Select Delivery Zone for Transport Fee' : 'Estimated Delivery Zone'}
-                        </label>
-                        <select
-                            name="deliveryLocationZone"
-                            value={selectedZone}
-                            onChange={(e) => setSelectedZone(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-white text-sm"
-                            required={pricingMode === 'budget'}
-                        >
-                            {Object.entries(LAGOS_TRANSPORT_FEES).map(([zone, fee]) => (
-                                <option key={zone} value={zone} disabled={zone === 'select'}>
-                                    {zone === 'select' ? '--- Select Zone ---' : `${zone} (NGN ${fee.toLocaleString()})`}
-                                </option>
-                            ))}
-                        </select>
-                        <p className='text-xs text-gray-500 mt-1'>
-                            {pricingMode === 'budget' ? `Selected Fee: NGN ${finalCostDetails.transportFee.toLocaleString()}` : 'Fee will be confirmed by shopper.'}
-                        </p>
-                    </div>
-                </div>
-                
-                {/* Section 2: Pricing Mode */}
-                <h2 className="text-xl font-extrabold text-gray-800 mb-4 border-b-2 border-orange-100 pb-2">2. Choose Your Payment Method</h2>
-                {/* Reduced gap and padding */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <label className={`flex-1 flex items-start p-3 rounded-xl cursor-pointer transition duration-200 border-2 ${pricingMode === 'budget' ? 'bg-green-50 border-green-500 ring-2 ring-green-100' : 'bg-gray-50 border-gray-300 hover:bg-gray-100'}`}>
-                        <input 
-                            type="radio" 
-                            name="pricingMode" 
-                            value="budget" 
-                            checked={pricingMode === 'budget'} 
-                            onChange={() => setPricingMode('budget')} 
-                            className="w-4 h-4 mt-1 mr-2 appearance-none border-2 rounded-full checked:bg-green-600 checked:border-green-600 focus:outline-none flex-shrink-0"
-                            required
-                        />
-                        <div>
-                            <span className="font-bold text-gray-800 block text-sm">Client Budget (Instant Pay)</span>
-                            <span className="text-xs text-gray-600">Set budget per item, add calculated fees, & pay now.</span>
-                        </div>
-                    </label>
+      {/* Grid 1: Name and Email */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Full Name */}
+        <div>
+          <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="Your Name"
+          />
+          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+        </div>
+        
+        {/* Email Address */}
+        <div>
+          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="Your-Mail@example.com"
+          />
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+        </div>
+      </div> {/* End Grid 1 */}
 
-                    <label className={`flex-1 flex items-start p-3 rounded-xl cursor-pointer transition duration-200 border-2 ${pricingMode === 'quote' ? 'bg-orange-50 border-orange-500 ring-2 ring-orange-100' : 'bg-gray-50 border-gray-300 hover:bg-gray-100'}`}>
-                        <input 
-                            type="radio" 
-                            name="pricingMode" 
-                            value="quote" 
-                            checked={pricingMode === 'quote'} 
-                            onChange={() => setPricingMode('quote')} 
-                            className="w-4 h-4 mt-1 mr-2 appearance-none border-2 rounded-full checked:bg-orange-600 checked:border-orange-600 focus:outline-none flex-shrink-0"
-                            required
-                        />
-                        <div>
-                            <span className="font-bold text-gray-800 block text-sm">Shopper Sourced Price (Quote Later)</span>
-                            <span className="text-xs text-gray-600">Submit list and wait for shopper to send a final quote (including fees).</span>
-                        </div>
-                    </label>
-                </div>
-                
-                {/* Section 3: Shopping List */}
-                <h2 className="text-xl font-extrabold text-gray-800 mb-4 border-b-2 border-orange-100 pb-2">3. Create Shopping List</h2>
-                
-                {/* Shopping List Items */}
-                {shoppingList.map((item, index) => (
-                    <ShoppingListItem
-                        key={index}
-                        index={index}
-                        item={item}
-                        onChange={handleListItemChange}
-                        onRemove={handleRemoveItem}
-                        showBudgetError={pricingMode === 'budget' && showBudgetError}
-                    />
-                ))}
+      {/* Grid 2: Phone and WhatsApp */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Phone Number */}
+        <div>
+          <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handlePhoneInputChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="+234..."
+          />
+          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+        </div>
 
-                {/* Reduced py- and mb- */}
-                <button
-                    type="button"
-                    onClick={handleAddItem}
-                    className="w-full bg-gray-100 text-gray-700 py-2 rounded-xl mb-6 hover:bg-gray-200 transition duration-150 font-bold border-2 border-dashed border-gray-300 text-sm"
-                >
-                    + Add Another Item
-                </button>
-                
-                {/* Total Cost Breakdown Display */}
-                {pricingMode === 'budget' && finalCostDetails.finalAmount > 0 && (
-                    <div className='p-4 mb-6 bg-green-100 rounded-xl border-2 border-green-500'>
-                        <h3 className='text-lg font-extrabold text-green-800 mb-2 border-b border-green-300 pb-1'>
-                            Estimated Instant Payment Breakdown
-                        </h3>
-                        
-                        <div className='space-y-1 text-sm'>
-                            <div className='flex justify-between'>
-                                <span className='text-gray-700'>Shopping List Total (Budget)</span>
-                                <span className='font-semibold text-gray-800'>NGN {finalCostDetails.shoppingListTotal.toLocaleString()}</span>
-                            </div>
-                            <div className='flex justify-between'>
-                                <span className='text-gray-700'>Base Shopper Fee</span>
-                                <span className='font-semibold text-gray-800'>NGN {finalCostDetails.shopperFee.toLocaleString()}</span>
-                            </div>
-                            <div className='flex justify-between'>
-                                <span className='text-gray-700'>10% Service Fee</span>
-                                <span className='font-semibold text-gray-800'>NGN {Math.ceil(finalCostDetails.serviceFee).toLocaleString()}</span>
-                            </div>
-                            <div className='flex justify-between'>
-                                <span className='text-gray-700'>Transport Fee (Selected Zone)</span>
-                                <span className='font-semibold text-gray-800'>NGN {finalCostDetails.transportFee.toLocaleString()}</span>
-                            </div>
-                            {/* Priority Fee in breakdown */}
-                            <div className='flex justify-between'>
-                                <span className='text-gray-700'>Delivery Priority Fee</span>
-                                <span className='font-semibold text-gray-800'>NGN {finalCostDetails.priorityFee.toLocaleString()}</span>
-                            </div>
+        {/* WhatsApp Number */}
+        <div>
+          <label htmlFor="whatsappNumber" className="block text-gray-700 font-medium mb-2">WhatsApp Number</label>
+          <input
+            type="tel"
+            id="whatsappNumber"
+            name="whatsappNumber"
+            value={formData.whatsappNumber}
+            onChange={handlePhoneInputChange}
+            // Updated focus ring to orange-300
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="+234..."
+            disabled={isWhatsappSameAsPhone} // Disable if checkbox is checked
+          />
+          {errors.whatsappNumber && <p className="text-red-500 text-sm mt-1">{errors.whatsappNumber}</p>}
+          
+          {/* Checkbox: Updated text color to orange-600 */}
+          <div className="mt-2 flex items-center">
+            <input
+              type="checkbox"
+              id="sameAsPhone"
+              checked={isWhatsappSameAsPhone}
+              onChange={handleWhatsappCheckboxChange}
+              className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+            />
+            <label htmlFor="sameAsPhone" className="ml-2 text-gray-700 text-sm">Same as Phone Number</label>
+          </div>
+        </div>
+      </div> {/* End Grid 2 */}
 
-                            <div className='flex justify-between pt-2 border-t border-green-300 font-extrabold text-lg text-green-700'>
-                                <span>TOTAL DUE NOW</span>
-                                <span>NGN {finalCostDetails.finalAmount.toLocaleString()}</span>
-                            </div>
-                        </div>
-                        <p className='text-xs text-green-700 mt-2 text-center'>* Total amount rounded up to the nearest whole number.</p>
-                    </div>
-                )}
-                
-                {/* Section 4: Additional Notes */}
-                <h2 className="text-xl font-extrabold text-gray-800 mb-4 border-b-2 border-orange-100 pb-2">4. Additional Notes</h2>
-                <textarea 
-                    name="notes"
-                    placeholder="E.g., 'Please buy the blue version of the kettle', 'If item A is unavailable, buy item B instead'." 
-                    className="w-full p-3 border border-gray-300 rounded-lg mb-6 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-150" rows="2"
-                ></textarea>
-
-                {/* Submit Button (Updated with finalAmount) */}
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-orange-600 text-white text-lg font-extrabold py-4 rounded-xl hover:bg-orange-700 transition duration-300 shadow-xl shadow-orange-300 disabled:bg-gray-400 disabled:shadow-none"
-                >
-                    {pricingMode === 'budget' 
-                        ? `Pay NGN ${finalCostDetails.finalAmount.toLocaleString()} Now`
-                        : (isSubmitting ? 'Submitting...' : 'Submit List & Wait for Quote')
-                    }
-                </button>
-            </div>
-        </form>
-    );
+      <div className="flex justify-end pt-4">
+        {/* Next Button: Updated to the new orange style */}
+        <button
+          type="button"
+          onClick={nextStep}
+          className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 transition duration-200"
+        >
+          Next: Vehicle Preferences
+        </button>
+      </div>
+    </div>
+  );
 };
 
-// --- COMPONENT 3: Payment Widget ---
-const PaymentPage = ({ navigate, initialEmail = '', initialAmount = '' }) => {
-    const [amount, setAmount] = useState(initialAmount);
-    const [clientEmail, setClientEmail] = useState(initialEmail);
-    const [reference, setReference] = useState('');
+// Component for a single car preference entry
+// Component for a single car preference entry (Modified for Grid Layout)
+const CarPreferenceFields = ({
+  carIndex,
+  carPreference,
+  handleCarPreferenceChange,
+  removeCarPreference,
+  errors,
+  currentSelectedBrand,
+  setCurrentSelectedBrand,
+}) => {
+  const [brandSuggestions, setBrandSuggestions] = useState([]);
+  const [modelSuggestions, setModelSuggestions] = useState([]);
 
-    useEffect(() => {
-        setAmount(initialAmount);
-        setClientEmail(initialEmail);
-    }, [initialAmount, initialEmail]);
-
-    const payWithPaystack = () => {
-        if (!amount || Number(amount) <= 0) { alert('Please enter a valid total amount due.'); return; }
-        if (!clientEmail || !clientEmail.includes('@')) { alert('Please enter a valid email address.'); return; }
-        
-        if (typeof window.PaystackPop === 'undefined') { alert('Payment system not fully loaded.'); return; }
-
-        const handler = window.PaystackPop.setup({
-            key: PAYSTACK_PUBLIC_KEY,
-            email: clientEmail,
-            amount: Math.floor(Number(amount) * 100), // Amount in Kobo/Cent
-            ref: reference || `ms_${Date.now()}`,
-            onClose: () => { console.log('Payment window closed by user.'); },
-            callback: (response) => {
-                alert(`Payment Successful! Transaction Ref: ${response.reference}`);
-                setAmount('');
-                setClientEmail('');
-                setReference('');
-                navigate('order'); 
-            },
-        });
-        
-        handler.openIframe();
+  const brandInputRef = useRef(null);
+  const modelInputRef = useRef(null);
+  // Effect to handle clicks outside the suggestion lists to close them
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (brandInputRef.current && !brandInputRef.current.contains(event.target)) {
+        setBrandSuggestions([]);
+      }
+      if (modelInputRef.current && !modelInputRef.current.contains(event.target)) {
+        setModelSuggestions([]);
+      }
     };
-    
-    const isPayButtonDisabled = !(Number(amount) > 0 && clientEmail.includes('@'));
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-    return (
-        // Reduced padding and margin-top 
-        <div className="max-w-md mx-auto bg-white p-6 rounded-3xl shadow-2xl border border-gray-100 mt-6">
-            {/* Reduced h2 size, mb- and pb- */}
-            <h2 className="text-2xl font-extrabold text-green-600 mb-4 border-b-2 border-green-100 pb-2 text-center">💳 Secure Payment</h2>
-            {/* Reduced mb- and text-size */}
-            <p className="text-gray-600 mb-6 text-center text-sm">
-                Complete your payment securely via Paystack.
-            </p>
+  // Handlers (Functionality remains unchanged)
+  const handleMakeChange = (e) => {
+    const value = e.target.value;
+    handleCarPreferenceChange(carIndex, 'vehicleMake', value);
+    setCurrentSelectedBrand(carIndex, '');
+    setModelSuggestions([]);
+    handleCarPreferenceChange(carIndex, 'vehicleModel', '');
+    handleCarPreferenceChange(carIndex, 'bodyStyle', '');
 
-            {/* Reduced mb- and text-size/padding */}
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold mb-1 text-base">Total Amount Due (NGN)</label>
-                <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="e.g., 45000"
-                    className="w-full p-3 border-4 border-green-400 rounded-xl text-2xl font-extrabold text-center focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-150"
-                    required
-                />
-                {initialAmount && <p className='text-xs text-green-600 mt-1 text-center font-medium'>* This amount is pre-filled from your total item budget + fees.</p>}
-            </div>
-            {/* Reduced mb- */}
-            <div className="mb-4">
-                <label className="block text-gray-700 font-bold mb-1 text-sm">Your Email for Receipt</label>
-                <input
-                    type="email"
-                    value={clientEmail}
-                    onChange={(e) => setClientEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-150 text-sm"
-                    required
-                />
-                {initialEmail && <p className='text-xs text-gray-500 mt-1'>* Email is pre-filled from your order details.</p>}
-            </div>
-            {/* Reduced mb- */}
-            <div className="mb-6">
-                <label className="block text-gray-700 font-bold mb-1 text-sm">Payment Reference (Optional)</label>
-                <input
-                    type="text"
-                    value={reference}
-                    onChange={(e) => setReference(e.target.value)}
-                    placeholder="Enter reference sent by shopper (if any)"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-150 text-sm"
-                />
-            </div>
+    if (value.length > 0) {
+      const filtered = Object.keys(carData).filter(brand =>
+        brand.toLowerCase().includes(value.toLowerCase())
+      );
+      setBrandSuggestions(filtered);
+    } else {
+      setBrandSuggestions([]);
+    }
+  };
 
-            {/* Reduced py- and text-size */}
-            <button
-                onClick={payWithPaystack} 
-                disabled={isPayButtonDisabled}
-                className="w-full bg-green-600 text-white text-lg font-bold py-3 rounded-xl hover:bg-green-700 transition duration-300 shadow-xl shadow-green-300 disabled:bg-gray-400 disabled:shadow-none"
-            >
-                Pay NGN {Number(amount) > 0 ? Number(amount).toLocaleString() : 'Enter Amount'}
-            </button>
-            
-            {/* Reduced mt- and text-size */}
-            <button 
-                onClick={() => navigate('order')}
-                className="mt-4 w-full text-xs text-gray-500 hover:text-orange-600 transition font-semibold"
-            >
-                Back to Order Form
-            </button>
+  const handleBrandSelect = (brand) => {
+    setTimeout(() => {
+      handleCarPreferenceChange(carIndex, 'vehicleMake', brand);
+      setCurrentSelectedBrand(carIndex, brand);
+      setBrandSuggestions([]);
+      handleCarPreferenceChange(carIndex, 'vehicleModel', '');
+      handleCarPreferenceChange(carIndex, 'bodyStyle', '');
+    }, 0);
+  };
+
+  const handleModelChange = (e) => {
+    const value = e.target.value;
+    handleCarPreferenceChange(carIndex, 'vehicleModel', value);
+
+    if (currentSelectedBrand && value.length > 0) {
+      const models = Object.keys(carData[currentSelectedBrand] || {});
+      const filtered = models.filter(model =>
+        model.toLowerCase().includes(value.toLowerCase())
+      );
+      setModelSuggestions(filtered);
+    } else {
+      setModelSuggestions([]);
+    }
+  };
+
+  const handleModelSelect = (model) => {
+    handleCarPreferenceChange(carIndex, 'vehicleModel', model);
+    setModelSuggestions([]);
+
+    // Automatically set body style based on selected model
+    if (currentSelectedBrand && carData[currentSelectedBrand] && carData[currentSelectedBrand][model]) {
+      handleCarPreferenceChange(carIndex, 'bodyStyle', carData[currentSelectedBrand][model]);
+    }
+  };
+
+  const handleFeatureChange = (e) => {
+    const { value, checked } = e.target;
+    let updatedFeatures = [...carPreference.keyFeatures];
+    if (checked) {
+      updatedFeatures.push(value);
+    } else {
+      updatedFeatures = updatedFeatures.filter((feature) => feature !== value);
+    }
+    handleCarPreferenceChange(carIndex, 'keyFeatures', updatedFeatures);
+  };
+
+  const minYearAllowed = 2003;
+  const currentYear = new Date().getFullYear();
+
+  return (
+    // Updated border and shadow for the car card
+    <div className="border border-gray-200 rounded-xl p-6 sm:p-8 mb-10 bg-white shadow-md">
+      <div className="flex justify-between items-center mb-6">
+        <h4 className="text-2xl font-semibold text-gray-800">Car #{carIndex + 1} Preferences</h4>
+        {carIndex > 0 && ( // Only show remove button if it's not the first car
+          <button
+            type="button"
+            onClick={() => removeCarPreference(carIndex)}
+            // Updated button style to orange
+            className="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition duration-200"
+          >
+            Remove Car
+          </button>
+        )}
+      </div>
+
+      {/* ------------------------------------------- */}
+      {/* GRID 1: MAKE, MODEL, YEAR RANGE */}
+      {/* ------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        
+        {/* 1. Vehicle Make with Autocomplete */}
+        <div className="relative" ref={brandInputRef}>
+          <label htmlFor={`vehicleMake-${carIndex}`} className="block text-gray-700 font-medium mb-2">Vehicle Make</label>
+          <input
+            type="text"
+            id={`vehicleMake-${carIndex}`}
+            name={`vehicleMake-${carIndex}`}
+            value={carPreference.vehicleMake}
+            onChange={handleMakeChange}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="e.g., Toyota, BMW"
+            autoComplete="off"
+          />
+          {errors[`vehicleMake-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleMake-${carIndex}`]}</p>}
+          {brandSuggestions.length > 0 && (
+            <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
+              {brandSuggestions.map((brand, index) => (
+                <li
+                  key={index}
+                  className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-gray-800"
+                  onClick={() => handleBrandSelect(brand)}
+                >
+                  {brand}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-    );
-}
 
-// --- MAIN APP COMPONENT ---
-export default function MarketShopperApp() { 
-    // Simple state-based routing
-    const [page, setPage] = useState('order'); // 'order' or 'payment'
-    const [paymentData, setPaymentData] = useState({ email: '', amount: '' });
+        {/* 2. Vehicle Model with Autocomplete */}
+        <div className="relative" ref={modelInputRef}>
+          <label htmlFor={`vehicleModel-${carIndex}`} className="block text-gray-700 font-medium mb-2">Vehicle Model</label>
+          <input
+            type="text"
+            id={`vehicleModel-${carIndex}`}
+            name={`vehicleModel-${carIndex}`}
+            value={carPreference.vehicleModel}
+            onChange={handleModelChange}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder={currentSelectedBrand ?
+              `e.g., ${Object.keys(carData[currentSelectedBrand] || {})[0] || 'Model'}` : "Select a Make first"}
+            disabled={!currentSelectedBrand}
+            autoComplete="off"
+          />
+          {errors[`vehicleModel-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleModel-${carIndex}`]}</p>}
+          {modelSuggestions.length > 0 && (
+            <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
+              {modelSuggestions.map((model, index) => (
+                <li
+                  key={index}
+                  className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-gray-800"
+                  onClick={() => handleModelSelect(model)}
+                >
+                  {model}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* 3. Model Year Range (Combined Min/Max) */}
+        <div>
+          <label htmlFor={`vehicleYearMin-${carIndex}`} className="block text-gray-700 font-medium mb-2">Model Year Range (Min - Max)</label>
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="number"
+              id={`vehicleYearMin-${carIndex}`}
+              name={`vehicleYearMin-${carIndex}`}
+              value={carPreference.vehicleYearMin}
+              onChange={(e) => handleCarPreferenceChange(carIndex, 'vehicleYearMin', e.target.value)}
+              // Updated focus ring
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+              placeholder={`Min (${minYearAllowed})`}
+              min={minYearAllowed}
+              max={currentYear + 1}
+            />
+            <input
+              type="number"
+              id={`vehicleYearMax-${carIndex}`}
+              name={`vehicleYearMax-${carIndex}`}
+              value={carPreference.vehicleYearMax}
+              onChange={(e) => handleCarPreferenceChange(carIndex, 'vehicleYearMax', e.target.value)}
+              // Updated focus ring
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+              placeholder={`Max (${currentYear})`}
+              min={minYearAllowed}
+              max={currentYear + 1}
+            />
+          </div>
+          {errors[`vehicleYear-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`vehicleYear-${carIndex}`]}</p>}
+        </div>
+      </div>
+      
+      {/* ------------------------------------------- */}
+      {/* GRID 2: CORE SPECS (BODY, FUEL, TRANSMISSION) */}
+      {/* ------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        
+        {/* 4. Body Style */}
+        <div>
+          <label htmlFor={`bodyStyle-${carIndex}`} className="block text-gray-700 font-medium mb-2">Body Style</label>
+          <select
+            id={`bodyStyle-${carIndex}`}
+            name={`bodyStyle-${carIndex}`}
+            value={carPreference.bodyStyle}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'bodyStyle', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Body Style</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Truck">Truck</option>
+            <option value="Coupe">Coupe</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="Minivan">Minivan</option>
+            <option value="Convertible">Convertible</option>
+            <option value="Van">Van</option>
+          </select>
+          {errors[`bodyStyle-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`bodyStyle-${carIndex}`]}</p>}
+        </div>
+        
+        {/* 5. Fuel Type */}
+        <div>
+          <label htmlFor={`fuelType-${carIndex}`} className="block text-gray-700 font-medium mb-2">Fuel Type</label>
+          <select
+            id={`fuelType-${carIndex}`}
+            name={`fuelType-${carIndex}`}
+            value={carPreference.fuelType}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'fuelType', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Fuel Type</option>
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Electric">Electric</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+          {errors[`fuelType-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`fuelType-${carIndex}`]}</p>}
+        </div>
+
+        {/* 6. Transmission Type */}
+        <div>
+          <label htmlFor={`transmissionType-${carIndex}`} className="block text-gray-700 font-medium mb-2">Transmission Type</label>
+          <select
+            id={`transmissionType-${carIndex}`}
+            name={`transmissionType-${carIndex}`}
+            value={carPreference.transmissionType}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'transmissionType', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Transmission</option>
+            <option value="Automatic">Automatic</option>
+            <option value="Manual">Manual</option>
+          </select>
+          {errors[`transmissionType-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`transmissionType-${carIndex}`]}</p>}
+        </div>
+      </div>
+
+      {/* ------------------------------------------- */}
+      {/* GRID 3: CONDITION, SEATS, COLOR */}
+      {/* ------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        
+        {/* 7. Car Condition */}
+        <div>
+          <label htmlFor={`carCondition-${carIndex}`} className="block text-gray-700 font-medium mb-2">Car Condition</label>
+          <select
+            id={`carCondition-${carIndex}`}
+            name={`carCondition-${carIndex}`}
+            value={carPreference.carCondition}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'carCondition', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Condition</option>
+            <option value="Tokunbo (Imported Used)">Tokunbo (Imported Used)</option>
+            <option value="Nigeria Used">Nigeria Used</option>
+            <option value="Brand New">Brand New</option>
+          </select>
+          {errors[`carCondition-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`carCondition-${carIndex}`]}</p>}
+        </div>
+        
+        {/* 8. Number of Seats (Optional) */}
+        <div>
+          <label htmlFor={`numberOfSeats-${carIndex}`} className="block text-gray-700 font-medium mb-2">Number of Seats (Optional)</label>
+          <select
+            id={`numberOfSeats-${carIndex}`}
+            name={`numberOfSeats-${carIndex}`}
+            value={carPreference.numberOfSeats}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'numberOfSeats', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Select Number of Seats</option>
+            <option value="2">2 Seats</option>
+            <option value="4">4 Seats</option>
+            <option value="5">5 Seats</option>
+            <option value="6">6 Seats</option>
+            <option value="7">7 Seats</option>
+            <option value="8+">8+ Seats</option>
+          </select>
+          {errors[`numberOfSeats-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`numberOfSeats-${carIndex}`]}</p>}
+        </div>
+
+        {/* 9. Car Color */}
+        <div>
+          <label htmlFor={`carColor-${carIndex}`} className="block text-gray-700 font-medium mb-2">Desired Car Color</label>
+          <input
+            type="text"
+            id={`carColor-${carIndex}`}
+            name={`carColor-${carIndex}`}
+            value={carPreference.carColor}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'carColor', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="e.g., Black, White, Red"
+          />
+          {errors[`carColor-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`carColor-${carIndex}`]}</p>}
+        </div>
+      </div>
+      
+      {/* 10. Conditional field for Maximum Desired Mileage */}
+      {(carPreference.carCondition === 'Tokunbo (Imported Used)' || carPreference.carCondition === 'Nigeria Used') && (
+        <div className="mb-6">
+          <label htmlFor={`maxMileage-${carIndex}`} className="block text-gray-700 font-medium mb-2">Maximum Desired Mileage (km) (Optional)</label>
+          <input
+            type="number"
+            id={`maxMileage-${carIndex}`}
+            name={`maxMileage-${carIndex}`}
+            value={carPreference.maxMileage}
+            onChange={(e) => handleCarPreferenceChange(carIndex, 'maxMileage', e.target.value)}
+            // Updated focus ring
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="e.g., 100,000"
+            min="0"
+          />
+          {errors[`maxMileage-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`maxMileage-${carIndex}`]}</p>}
+        </div>
+      )}
+
+      {/* 11. Key Features/Options - Updated for visual separation */}
+      <div className="p-4 border border-orange-100 bg-orange-50 rounded-lg">
+        <label className="block text-gray-700 font-bold mb-3">Key Features/Options (Optional)</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {['Sunroof/Moonroof', 'Leather Seats', 'Navigation System', 'Backup Camera/Parking Sensors', 'Apple CarPlay/Android Auto', 'All-Wheel Drive (AWD) / 4x4', 'Heated Seats', 'Bluetooth Connectivity'].map((feature) => (
+            <div key={feature} className="flex items-center">
+              <input
+                type="checkbox"
+                id={`${feature.replace(/\s|\/|\(|\)/g, '')}-${carIndex}`}
+                name={`keyFeatures-${carIndex}`}
+                value={feature}
+                checked={carPreference.keyFeatures.includes(feature)}
+                onChange={handleFeatureChange}
+                // Updated checkbox color to orange-600
+                className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+              />
+              <label htmlFor={`${feature.replace(/\s|\/|\(|\)/g, '')}-${carIndex}`} className="ml-2 text-gray-700 text-sm">{feature}</label>
+            </div>
+          ))}
+        </div>
+        {errors[`keyFeatures-${carIndex}`] && <p className="text-red-500 text-sm mt-1">{errors[`keyFeatures-${carIndex}`]}</p>}
+      </div>
+    </div>
+  );
+};
+
+
+// Component for Step 2: Vehicle Preferences (now orchestrates multiple car preferences)
+const StepTwo = ({ formData, handleChange, nextStep, prevStep, errors, hasErrorsForCurrentStep, addCarPreference, removeCarPreference, handleCarPreferenceChange }) => {
+  // We need a way to manage the selected brand for each individual car preference for autocomplete
+  // This will be an array of states, one for each car preference
+  const [selectedBrands, setSelectedBrands] = useState(formData.carPreferences.map(car => car.vehicleMake || ''));
+
+  // Function to update a specific selected brand in the array
+  const updateSelectedBrand = useCallback((index, brand) => {
+    setSelectedBrands(prev => {
+      const newBrands = [...prev];
+      newBrands[index] = brand;
+      return newBrands;
+    });
+  }, []); // Empty dependency array ensures this function is stable
+
+  return (
+    <div className="space-y-6">
+      {hasErrorsForCurrentStep() && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+          <strong className="font-bold">Oops!</strong>
+          <span className="block sm:inline ml-2">Please correct the errors below to proceed.</span>
+        </div>
+      )}
+      <h3 className="text-2xl font-semibold text-gray-800">Step 2: Vehicle Preferences</h3>
+      <p className="text-gray-600 mb-8">Tell us about the car(s) you're looking for.</p>
+
+      {formData.carPreferences.map((carPreference, index) => (
+        <CarPreferenceFields
+          key={index} // Using index as key is generally okay for stable lists like this
+          carIndex={index}
+          carPreference={carPreference}
+          handleCarPreferenceChange={handleCarPreferenceChange}
+          removeCarPreference={removeCarPreference}
+          errors={errors}
+          currentSelectedBrand={selectedBrands[index]} // Pass the specific selected brand for this car
+          setCurrentSelectedBrand={updateSelectedBrand} // Pass the stable setter function
+        />
+      ))}
+
+      <button
+        type="button"
+        onClick={addCarPreference}
+        className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200"
+      >
+        Add Another Car
+      </button>
+
+      <div className="flex justify-between mt-8">
+        <button
+          type="button"
+          onClick={prevStep}
+          className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200"
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          onClick={nextStep}
+          className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+// Component for Step 3: Budget & Trade-in (Modified for Orange Theme and Layout)
+// Component for Step 3: Budget & Trade-in (Modified to add Payment and Referral options)
+const StepThree = ({ formData, handleChange, handleSubmit, prevStep, errors, hasErrorsForCurrentStep }) => (
+  <div className="space-y-6">
+    {/* Error Banner: Updated background/text color */}
+    {hasErrorsForCurrentStep() && (
+      <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-6" role="alert">
+          <strong className="font-bold">Oops!</strong>
+          <span className="block sm:inline ml-2">Please correct the errors below to proceed.</span>
+        </div>
+    )}
+    {/* Step Title: Using the accent color */}
+    <h3 className="text-3xl font-bold text-orange-600 mb-6">Step 3: Budget & Additional Details</h3>
+ 
+    <p className="text-gray-600 mb-6">Tell us about your budget and any other requirements.</p>
+
+    {/* Price Range Grid (No Change) */}
+    <div>
+      <label htmlFor="minPrice" className="block text-gray-700 font-medium mb-2">Price Range (NGN)</label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <input
+            type="number"
+            id="minPrice"
+            name="minPrice"
+            value={formData.minPrice}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="Min Price (e.g., 5,000,000)"
+            min="0"
+          />
+          {errors.minPrice && <p className="text-red-500 text-sm mt-1">{errors.minPrice}</p>}
+        </div>
     
-    const navigate = (newPage, data = {}) => {
-        setPage(newPage);
-        if (newPage === 'payment') {
-            setPaymentData(data);
+        <div>
+          <input
+            type="number"
+            id="maxPrice"
+            name="maxPrice"
+            value={formData.maxPrice}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="Max Price (e.g., 15,000,000)"
+            min="0"
+          />
+          {errors.maxPrice && <p className="text-red-500 text-sm mt-1">{errors.maxPrice}</p>}
+        </div>
+      </div>
+      {errors.priceRange && <p className="text-red-500 text-sm mt-1">{errors.priceRange}</p>}
+    </div>
+
+    {/* 🌟 NEW FIELD: Payment Option/Finance 🌟 */}
+    <div>
+      <label htmlFor="paymentOption" className="block text-gray-700 font-medium mb-2">Payment Option</label>
+      <select
+        id="paymentOption"
+        name="paymentOption"
+        value={formData.paymentOption}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+      >
+        <option value="">Select Payment Type</option>
+        <option value="Cash Purchase">Cash Purchase</option>
+        <option value="Financing / Loan">Financing / Loan</option>
+      </select>
+      {errors.paymentOption && <p className="text-red-500 text-sm mt-1">{errors.paymentOption}</p>}
+    </div>
+
+    {/* Conditional fields for Swap (No Change) */}
+    <div>
+      <label htmlFor="swap" className="block text-gray-700 font-medium mb-2">Do you want to swap a vehicle?</label>
+      <select
+        id="swap"
+        name="swap"
+        value={formData.swap}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+      >
+        <option value="">Select Option</option>
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+      {errors.swap && <p className="text-red-500 text-sm mt-1">{errors.swap}</p>}
+    </div>
+
+    {formData.swap === 'Yes' && (
+      <div className="border border-orange-200 rounded-lg p-6 space-y-4 bg-orange-50">
+        <h4 className="text-lg font-bold text-orange-700 border-b border-orange-200 pb-2">Swap Vehicle Details</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="swapMake" className="block text-gray-700 font-medium mb-2">Swap Make</label>
+              <input
+                type="text"
+                id="swapMake"
+                name="swapMake"
+                value={formData.swapMake}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., Honda"
+              />
+              {errors.swapMake && <p className="text-red-500 text-sm mt-1">{errors.swapMake}</p>}
+            </div>
+            
+            <div>
+              <label htmlFor="swapModel" className="block text-gray-700 font-medium mb-2">Swap Model</label>
+              <input
+                type="text"
+                id="swapModel"
+                name="swapModel"
+                value={formData.swapModel}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., Civic"
+              />
+              {errors.swapModel && <p className="text-red-500 text-sm mt-1">{errors.swapModel}</p>}
+            </div>
+            
+            <div>
+              <label htmlFor="swapYear" className="block text-gray-700 font-medium mb-2">Swap Year</label>
+              <input
+                type="number"
+                id="swapYear"
+                name="swapYear"
+                value={formData.swapYear}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., 2015"
+                min="1900"
+                max={new Date().getFullYear()}
+              />
+              {errors.swapYear && <p className="text-red-500 text-sm mt-1">{errors.swapYear}</p>}
+            </div>
+            
+            <div>
+              <label htmlFor="swapMileage" className="block text-gray-700 font-medium mb-2">Swap Mileage (km)</label>
+              <input
+                type="number"
+                id="swapMileage"
+                name="swapMileage"
+                value={formData.swapMileage}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+                placeholder="e.g., 80000"
+                min="0"
+              />
+              {errors.swapMileage && <p className="text-red-500 text-sm mt-1">{errors.swapMileage}</p>}
+            </div>
+        </div>
+      </div>
+    )}
+
+    {/* Timeframe (No Change) */}
+    <div>
+      <label htmlFor="timeframe" className="block text-gray-700 font-medium mb-2">Desired Timeframe</label>
+      <select
+        id="timeframe"
+        name="timeframe"
+        value={formData.timeframe}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+      >
+        <option value="">Select Timeframe</option>
+        <option value="Urgent (within 1-2 weeks)">Urgent (within 1-2 weeks)</option>
+        <option value="Within 1 month">Within 1 month</option>
+        <option value="Within 2-3 months">Within 2-3 months</option>
+        <option value="Just browsing">Just browsing</option>
+      </select>
+      {errors.timeframe && <p className="text-red-500 text-sm mt-1">{errors.timeframe}</p>}
+    </div>
+    
+    {/* 🌟 NEW FIELD: Referral Source 🌟 */}
+    <div>
+      <label htmlFor="referralSource" className="block text-gray-700 font-medium mb-2">How did you hear about us? (Optional)</label>
+      <select
+        id="referralSource"
+        name="referralSource"
+        value={formData.referralSource}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+      >
+        <option value="">Select Source</option>
+        <option value="Google Search">Google Search</option>
+        <option value="Social Media">Social Media (Facebook/Instagram)</option>
+        <option value="Referral/Friend">Referral/Friend</option>
+        <option value="Existing Client">Existing Client</option>
+        <option value="Online Ad">Online Ad</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    {/* Additional Notes (No Change) */}
+    <div>
+      <label htmlFor="additionalNotes" className="block text-gray-700 font-medium mb-2">Additional Notes / Specific Features (Optional)</label>
+      <textarea
+        id="additionalNotes"
+        name="additionalNotes"
+        value={formData.additionalNotes}
+        onChange={handleChange}
+        rows="4"
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300"
+        placeholder="Any specific colors, features, or details you're looking for?"
+      ></textarea>
+    </div>
+
+    <div className="flex justify-between pt-4">
+      <button
+        type="button"
+        onClick={prevStep}
+        className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 transition duration-200"
+      >
+        Previous
+      </button>
+      <button
+        type="submit"
+        onClick={handleSubmit}
+        className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 transition duration-200"
+      >
+        Submit Request
+      </button>
+    </div>
+  </div>
+);
+
+// New Modal Component for Car Details
+const CarDetailModal = ({ car, onClose }) => {
+  if (!car) return null; // Don't render if no car is selected
+
+  return (
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          aria-label="Close modal"
+        >
+          &times;
+        </button>
+        <h3 className="text-3xl font-bold text-gray-800 mb-4">{car.make} {car.model}</h3>
+        <img
+          src={car.imageUrl}
+          alt={`${car.make} ${car.model}`}
+          className="w-full h-48 object-cover rounded-lg mb-4"
+          onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x250/E0E7FF/3B82F6?text=Car+Image`; }}
+        />
+        <div className="text-gray-700 space-y-2 mb-4">
+          <p><strong>Year:</strong> {car.year}</p>
+          <p><strong>Price:</strong> {car.price}</p>
+          <p><strong>Condition:</strong> {car.condition}</p>
+          <p><strong>Mileage:</strong> {car.mileage}</p>
+          <p><strong>Fuel Type:</strong> {car.fuelType}</p>
+          <p><strong>Transmission:</strong> {car.transmissionType}</p>
+          <p><strong>Body Style:</strong> {car.bodyStyle}</p>
+          {car.features && car.features.length > 0 && (
+            <div>
+              <strong>Features:</strong>
+              <ul className="list-disc list-inside ml-4">
+                {car.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <p className="text-gray-700 mb-4">
+          This is an example of a {car.year} {car.make} {car.model} available through our network.
+          Contact us for more details!
+        </p>
+        <button
+          onClick={onClose}
+          className="w-full px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition duration-200"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+// Main App component
+const App = () => {
+  // Default structure for a single car preference object
+  const initialCarPreference = {
+    vehicleMake: '',
+    vehicleModel: '',
+    vehicleYearMin: '',
+    vehicleYearMax: '',
+    carCondition: '',
+    bodyStyle: '',
+    carColor: '',
+    fuelType: '',
+    transmissionType: '',
+    maxMileage: '',
+    numberOfSeats: '',
+    keyFeatures: [],
+  };
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '+234', // Pre-fill with +234
+    whatsappNumber: '+234', // Pre-fill with +234
+    carPreferences: [initialCarPreference], // Initialize with one car preference
+    minPrice: '',
+    maxPrice: '',
+    swap: 'No', // Changed from tradeIn
+    swapMake: '', // Changed from tradeInMake
+    swapModel: '', // Changed from tradeInModel
+    swapYear: '', // Changed from tradeInYear
+    swapMileage: '', // Changed from tradeInMileage
+    timeframe: '',
+    // --- NEW FIELDS ---
+    paymentOption: '', // Initialize new payment field
+    referralSource: '', // Initialize new referral field
+    additionalNotes: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [isWhatsappSameAsPhone, setIsWhatsappSameAsPhone] = useState(false); // New state for checkbox
+
+  // State for modal
+  const [showCarDetailModal, setShowCarDetailModal] = useState(false);
+  const [selectedCarForModal, setSelectedCarForModal] = useState(null);
+
+  // Function to open the modal with specific car details
+  
+
+  // Function to close the modal
+  const closeCarDetailModal = () => {
+    setShowCarDetailModal(false);
+    setSelectedCarForModal(null); // Ensure selected car is cleared
+  };
+
+
+  // Handles changes for top-level form fields (not car preferences)
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (errors[name]) {
+      setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+    }
+  };
+
+  // Handles changes for fields within a specific car preference object
+  const handleCarPreferenceChange = (index, name, value) => {
+    setFormData((prevFormData) => {
+      const newCarPreferences = [...prevFormData.carPreferences];
+      newCarPreferences[index] = {
+        ...newCarPreferences[index],
+        [name]: value,
+      };
+      console.log(`Updating car ${index}, field ${name} to:`, value); // Log for debugging
+      return { ...prevFormData, carPreferences: newCarPreferences };
+    });
+    // Clear error for the specific car field being changed
+    if (errors[`${name}-${index}`]) {
+      setErrors((prevErrors) => ({ ...prevErrors, [`${name}-${index}`]: '' }));
+    }
+  };
+
+  // Adds a new empty car preference object to the array
+  const addCarPreference = () => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      carPreferences: [...prevFormData.carPreferences, { ...initialCarPreference }],
+    }));
+  };
+
+  // Removes a car preference object from the array by index
+  const removeCarPreference = (indexToRemove) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      carPreferences: prevFormData.carPreferences.filter((_, index) => index !== indexToRemove),
+    }));
+    // Clear any errors associated with the removed car
+    setErrors((prevErrors) => {
+      const newErrors = { ...prevErrors };
+      Object.keys(newErrors).forEach(key => {
+        if (key.endsWith(`-${indexToRemove}`)) {
+          delete newErrors[key];
         }
-    };
+      });
+      return newErrors;
+    });
+  };
 
-    const renderContent = () => {
-        if (page === 'payment') {
-            return <PaymentPage 
-                navigate={navigate} 
-                initialEmail={paymentData.email} 
-                initialAmount={paymentData.amount} 
-            />;
+  // Validates the current step's fields before proceeding
+  const validateStep = () => {
+    let newErrors = {};
+    let isValid = true;
+
+    // Validation for Step 1: Contact Information
+    if (currentStep === 1) {
+      if (!formData.name.trim()) {
+        newErrors.name = 'Name is required.';
+        isValid = false;
+      }
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required.';
+        isValid = false;
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Email is invalid.';
+        isValid = false;
+      }
+      // Validate phone number: must start with +234 and have at least 10 digits total
+      if (!formData.phone.trim() || !formData.phone.startsWith('+234') || formData.phone.length < 10) {
+        newErrors.phone = 'Phone number is required and must start with +234 (e.g., +2348012345678).';
+        isValid = false;
+      }
+      // Validate whatsapp number: must start with +234 and have at least 10 digits total
+      if (!formData.whatsappNumber.trim() || !formData.whatsappNumber.startsWith('+234') || formData.whatsappNumber.length < 10) {
+        newErrors.whatsappNumber = 'WhatsApp number is required and must start with +234 (e.g., +2348012345678).';
+        isValid = false;
+      }
+    }
+
+    // Validation for Step 2: Vehicle Preferences (Iterate through each car)
+    const minAllowedYear = 2003;
+    const currentYear = new Date().getFullYear();
+
+    if (currentStep === 2) {
+      formData.carPreferences.forEach((car, index) => {
+        if (!car.vehicleMake.trim()) {
+          newErrors[`vehicleMake-${index}`] = 'Vehicle Make is required.';
+          isValid = false;
         }
-        return (
-            <>
-                {/* Hero Section (Reduced vertical padding: py-10 for mobile, py-16 for desktop) */}
-                <section className="bg-orange-600 py-10 sm:py-16 text-center text-white relative overflow-hidden">
-                    {/* Placeholder for "Image" */}
-                    <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{backgroundImage: "url('https://example.com/placeholder-market.jpg')"}}></div>
-                    <div className="container mx-auto px-4 relative z-10">
-                        {/* Reduced icon size and mb- */}
-                        <div className="text-5xl sm:text-6xl font-extrabold mb-3 animate-pulse">🛒</div>
-                        {/* Reduced h1 size */}
-                        <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                            Your Personal Shopper for Any Store
-                        </h1>
-                        {/* Reduced mt- and py- */}
-                        <a
-                            href="#order-form"
-                            className="mt-4 inline-block bg-green-500 text-white text-base font-extrabold py-2 px-6 rounded-xl hover:bg-green-600 transition duration-300 shadow-xl"
-                        >
-                            Start Your Shopping List Now!
-                        </a>
-                    </div>
-                </section>
+        if (!car.vehicleModel.trim()) {
+          newErrors[`vehicleModel-${index}`] = 'Vehicle Model is required.';
+          isValid = false;
+        }
+        if (!car.vehicleYearMin.trim() || !car.vehicleYearMax.trim()) {
+          newErrors[`vehicleYear-${index}`] = 'Both min and max year are required.';
+          isValid = false;
+        } else {
+          const minYear = parseInt(car.vehicleYearMin);
+          const maxYear = parseInt(car.vehicleYearMax);
 
-                {/* Main Content: The Order Form (Reduced vertical padding) */}
-                <section id="order-form" className="py-8 sm:py-12 bg-gray-50">
-                    <div className="container mx-auto px-4">
-                        <OrderForm navigate={navigate} />
-                    </div>
-                </section>
-                
-                {/* How It Works Section - Reduced vertical padding and h2 mb- */}
-                <section className="py-8 sm:py-12 bg-white">
-                    <div className="container mx-auto px-4">
-                        <h2 className="text-2xl font-extrabold text-center text-gray-800 mb-8 sm:mb-10">How It Works</h2>
-                        {/* Reduced gap */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Step 1: Choose Price Mode */}
-                            <div className="p-4 rounded-xl bg-green-50 shadow-lg border-t-4 border-green-500 hover:shadow-xl transition duration-300">
-                                {/* Reduced icon size and mb- */}
-                                <div className="flex items-center mb-2">
-                                    <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-base font-bold flex-shrink-0">
-                                        1
-                                    </div>
-                                    <h3 className="text-lg font-bold ml-2 text-gray-800">Choose Price Mode</h3>
-                                </div>
-                                {/* Reduced text size and mt- */}
-                                <p className="text-sm opacity-90 text-gray-700 mt-1">
-                                    Select **Client Budget (Instant Pay)** for immediate payment, or **Shopper Sourced Price** for a quote later.
-                                </p>
-                            </div>
-                            
-                            {/* Step 2: Confirm Payment */}
-                            <div className="p-4 rounded-xl bg-orange-50 shadow-lg border-t-4 border-orange-500 hover:shadow-xl transition duration-300">
-                                {/* Reduced icon size and mb- */}
-                                <div className="flex items-center mb-2">
-                                    <div className="bg-orange-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-base font-bold flex-shrink-0">
-                                        2
-                                    </div>
-                                    <h3 className="text-lg font-bold ml-2 text-gray-800">Confirm Payment</h3>
-                                </div>
-                                {/* Reduced text size and mt- */}
-                                <p className="text-sm opacity-90 text-gray-700 mt-1">
-                                    If **Instant Pay**, you pay the calculated total (including fees). If **Quote Later**, a shopper contacts you with the final bill.
-                                </p>
-                            </div>
-                            
-                            {/* Step 3: Delivery */}
-                            <div className="p-4 rounded-xl bg-gray-50 shadow-lg border-t-4 border-gray-500 hover:shadow-xl transition duration-300">
-                                {/* Reduced icon size and mb- */}
-                                <div className="flex items-center mb-2">
-                                    <div className="bg-gray-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-base font-bold flex-shrink-0">
-                                        3
-                                    </div>
-                                    <h3 className="text-lg font-bold ml-2 text-gray-800">Delivery</h3>
-                                </div>
-                                {/* Reduced text size and mt- */}
-                                <p className="text-sm opacity-90 text-gray-700 mt-1">
-                                    Your shopper purchases your items and delivers them promptly at your specified time.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </>
-        );
-    };
+          if (minYear < minAllowedYear) {
+            newErrors[`vehicleYear-${index}`] = `Min year cannot be earlier than ${minAllowedYear}.`;
+            isValid = false;
+          }
+          if (maxYear > (currentYear + 1)) {
+            newErrors[`vehicleYear-${index}`] = `Max year cannot be later than ${currentYear + 1}.`;
+            isValid = false;
+          }
+          if (minYear > maxYear) {
+            newErrors[`vehicleYear-${index}`] = 'Min year cannot be greater than max year.';
+            isValid = false;
+          }
+        }
+        if (!car.bodyStyle) {
+          newErrors[`bodyStyle-${index}`] = 'Body Style is required.';
+          isValid = false;
+        }
+        if (!car.carCondition) {
+          newErrors[`carCondition-${index}`] = 'Please specify car condition.';
+          isValid = false;
+        }
+        if (!car.carColor.trim()) {
+          newErrors[`carColor-${index}`] = 'Car color is required.';
+          isValid = false;
+        }
+        if (!car.fuelType) {
+          newErrors[`fuelType-${index}`] = 'Fuel Type is required.';
+          isValid = false;
+        }
+        if (!car.transmissionType) {
+          newErrors[`transmissionType-${index}`] = 'Transmission Type is required.';
+          isValid = false;
+        }
+        // Number of seats is now optional, so no validation here
+        // Max mileage is now optional, so no validation here
+      });
+    }
 
-    return (
-        // ADDED font-mono class for a techy, digital look
-        <div className="min-h-screen bg-gray-50 font-mono">
-            {/* Header Section (Logo only - reduced vertical padding) */}
-            <header className="bg-white shadow sticky top-0 z-20">
-                <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-                    {/* Logo (Reduced text size) */}
-                    <div className="text-2xl font-extrabold cursor-pointer" onClick={() => navigate('order')}>
-                        🛒 Market<span className="text-orange-600">Shopper</span>
-                    </div>
-                    {/* Reduced padding and text size */}
-                    <button 
-                        onClick={() => navigate(page === 'order' ? 'payment' : 'order')}
-                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-gray-200 transition"
+    // Validation for Step 3: Budget & Swap
+    if (currentStep === 3) {
+      if (!formData.minPrice.trim()) {
+        newErrors.minPrice = 'Min price is required.';
+        isValid = false;
+      }
+      if (!formData.maxPrice.trim()) {
+        newErrors.maxPrice = 'Max price is required.';
+        isValid = false;
+      }
+      if (formData.minPrice.trim() && formData.maxPrice.trim() && parseInt(formData.minPrice) > parseInt(formData.maxPrice)) {
+        newErrors.priceRange = 'Min price cannot be greater than max price.';
+        isValid = false;
+      }
+       // 🌟 NEW FIELD VALIDATION: Payment Option
+      if (!formData.paymentOption) {
+        newErrors.paymentOption = 'Payment option is required.';
+        isValid = false;
+      }
+      if (formData.swap === 'Yes') { // Changed from tradeIn
+        if (!formData.swapMake.trim()) { // Changed from tradeInMake
+          newErrors.swapMake = 'Swap Make is required.'; // Changed from tradeInMake
+          isValid = false;
+        }
+        if (!formData.swapModel.trim()) { // Changed from tradeInModel
+          newErrors.swapModel = 'Swap Model is required.'; // Changed from tradeInModel
+          isValid = false;
+        }
+        if (!formData.swapYear.trim()) { // Changed from tradeInYear
+          newErrors.swapYear = 'Swap Year is required.'; // Changed from tradeInYear
+          isValid = false;
+        }
+        if (!formData.swapMileage.trim()) { // Changed from tradeInMileage
+          newErrors.swapMileage = 'Swap Mileage is required.'; // Changed from tradeInMileage
+          isValid = false;
+        }
+      }
+      if (!formData.timeframe) {
+        newErrors.timeframe = 'Desired timeframe is required.';
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Moves to the next step if validation passes
+  const nextStep = () => {
+    if (validateStep()) {
+      setCurrentStep((prevStep) => prevStep + 1);
+      window.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // Moves to the previous step
+  const prevStep = () => {
+    setCurrentStep((prevStep) => prevStep - 1);
+    setErrors({});
+    window.scrollTo(0, 0);
+  };
+
+  // Handles the final form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (validateStep()) {
+      // Show a loading indicator
+      // For this example, we'll just log to console, but in a real app, you'd set a loading state
+      console.log('Attempting to submit form data to Formspree:', formData);
+
+      try {
+        // Replace 'yourformid' with the actual ID you get from Formspree after creating your form
+        const formspreeEndpoint = 'https://formspree.io/f/xgvzwray'; // <-- UPDATED THIS LINE
+
+        const response = await fetch(formspreeEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json' // Formspree recommends this header
+          },
+          body: JSON.stringify(formData), // Send the entire form data as JSON
+        });
+
+        if (response.ok) {
+          setSubmissionSuccess(true);
+          // Optionally, clear the form after successful submission
+          setFormData({
+            name: '', email: '', phone: '+234', whatsappNumber: '+234',
+            carPreferences: [{ ...initialCarPreference }],
+            minPrice: '', maxPrice: '',
+            swap: 'No', swapMake: '', swapModel: '',
+            swapYear: '', swapMileage: '', timeframe: '', additionalNotes: '',
+          });
+          setCurrentStep(1); // Reset to the first step
+          setIsWhatsappSameAsPhone(false); // Reset checkbox state
+        } else {
+          // Handle server-side errors from Formspree
+          const errorData = await response.json();
+          console.error('Formspree submission failed:', errorData);
+          alert('Failed to submit your request. Please try again later.'); // Use a custom modal in a real app
+        }
+      } catch (error) {
+        console.error('Network error or unexpected issue during submission:', error);
+        alert('An error occurred. Please check your internet connection and try again.'); // Use a custom modal
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // Helper to check if there are any errors for the current step
+  const hasErrorsForCurrentStepFunc = (stepNum) => {
+    if (stepNum === 1) {
+      return errors.name || errors.email || errors.phone || errors.whatsappNumber;
+    }
+    if (stepNum === 2) {
+      // Check for errors in any of the car preference sections
+      return formData.carPreferences.some((_, index) => (
+        errors[`vehicleMake-${index}`] || errors[`vehicleModel-${index}`] ||
+        errors[`vehicleYear-${index}`] || errors[`bodyStyle-${index}`] ||
+        errors[`carCondition-${index}`] || errors[`carColor-${index}`] ||
+        errors[`fuelType-${index}`] || errors[`transmissionType-${index}`] ||
+        errors[`keyFeatures-${index}`]
+      ));
+    }
+    if (stepNum === 3) {
+      return errors.minPrice || errors.maxPrice || errors.priceRange || errors.swapMake || errors.swapModel || errors.swapYear || errors.swapMileage || errors.timeframe ||
+        // 🌟 NEW ERROR CHECK: paymentOption
+        errors.paymentOption;
+    }
+    return false;
+  };
+
+  // Sample car data for display
+  
+
+  // Function to handle smooth scrolling to sections
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Render the main application structure
+  return (
+    <div className="min-h-screen bg-white font-sans text-gray-900">
+      {/* Tailwind CSS CDN - IMPORTANT: This should be in your HTML head for a real project */}
+      <script src="https://cdn.tailwindcss.com"></script>
+      {/* Configure Tailwind to use 'Inter' font */}
+      <style>
+      {`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+          font-family: 'Inter', sans-serif;
+        }
+      `}
+    </style>
+
+      {/* Header/Navigation Section */}
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 p-4 sm:p-6">
+  <div className="container mx-auto flex justify-between items-center">
+    {/* 1. Logo (Left) - Using orange accent for the name */}
+    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+      9ja<span className="text-orange-600">CarPlug</span>
+    </h1>
+
+    {/* 2. Simple Navigation Links (Right/Centered) */}
+    <nav className="hidden sm:flex space-x-6">
+      {/* Updated hover color to orange-600 */}
+      
+      {/* Primary CTA in the header - using orange-600 button */}
+      <a 
+        href="#client-intake" 
+        className="px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-semibold hover:bg-orange-700 transition duration-200"
+      >
+        Start Search 
+      </a>
+    </nav>
+  </div>
+</header>
+
+      {/* Hero Section */}
+      <section 
+  id="hero" 
+  className="py-24 sm:py-32 text-center relative overflow-hidden border-b border-gray-700" 
+  style={{
+    // **CRITICAL: REPLACE 'YOUR_IMAGE_URL_HERE' with your actual image URL**
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('YOUR_IMAGE_URL_HERE')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed' // Optional: Adds a parallax effect
+  }}
+>
+  {/* The container holds the text and keeps it centered */}
+  <div className="container mx-auto px-4 relative z-10 text-white">
+    {/* Title: Changed text color to white, kept orange accent */}
+    <h2 className="text-5xl sm:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight max-w-4xl mx-auto text-white">
+      The Modern Way to Source Your <span className="text-orange-500">Perfect Car.</span>
+    </h2>
+    {/* Subtitle: Lighter gray for readability over the dark overlay */}
+    <p className="text-xl sm:text-2xl mb-8 sm:mb-10 text-gray-300 max-w-3xl mx-auto">
+      [cite_start]Get a dedicated broker to find, negotiate, and secure your next vehicle from a network of trusted dealers. [cite: 184, 185]
+    </p>
+    {/* CTA Button: Updated to use the primary orange color */}
+    <a
+      href="#client-intake"
+      onClick={(e) => { e.preventDefault(); scrollToSection('client-intake'); }}
+      className="inline-block px-10 sm:px-12 py-4 sm:py-5 bg-orange-600 text-white font-bold text-lg sm:text-xl rounded-full hover:bg-orange-700 transition duration-300 ease-in-out transform hover:scale-[1.03] focus:ring-4 focus:ring-orange-300 focus:ring-offset-2"
+    >
+      Start Your Free Request
+    </a>
+  </div>
+</section>
+
+      {/* Client Intake Form Section */}
+      <section id="client-intake" className="py-16 sm:py-24 bg-gray-50 px-4">
+    <div className="container mx-auto">
+        {/* Title: Using the new bold orange style */}
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10">
+            Your Custom Vehicle Request
+        </h2>
+        
+        {/* Form Card Wrapper: Larger card, subtle shadow, and border */}
+        <div className="bg-white rounded-xl p-8 sm:p-12 max-w-4xl mx-auto shadow-xl shadow-gray-200/50 border border-gray-100">
+            
+            {submissionSuccess ?
+            ( // Success Message Update
+                <div className="text-center py-10">
+                    {/* SVG Icon: Updated to use primary orange color */}
+                    <svg className="w-20 h-20 sm:w-24 sm:h-24 text-orange-600 mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Request Submitted Successfully!</h3>
+                    <p className="text-base sm:text-lg text-gray-600">
+                        [cite_start]Thank property is not an attribute of the response object in the provided file content. you for your submission. A dedicated broker will contact you shortly. [cite: 189]
+                    </p>
+                    {/* Button: Updated to use the primary orange color */}
+                    <button
+                        onClick={() => { 
+                            setSubmissionSuccess(false); setCurrentStep(1); 
+                            setFormData({
+                                name: '', email: '', phone: '+234', whatsappNumber: '+234', 
+                                carPreferences: [{ ...initialCarPreference }], 
+                                minPrice: '', maxPrice: '',
+                                swap: 'No', swapMake: '', swapModel: '',
+                                swapYear: '', swapMileage: '', timeframe: '', additionalNotes: '', 
+                            });
+                            setIsWhatsappSameAsPhone(false);
+                        }} 
+                        className="mt-6 sm:mt-8 px-6 sm:px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition duration-200 transform hover:scale-[1.03]"
                     >
-                        {page === 'order' ? 'Payment' : 'Order'}
+                        Submit Another Request
                     </button>
                 </div>
-            </header>
+            ) : (
+                <>
+                    {/* Progress Indicator */}
+                    <div className="mb-8">
+                        <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
+                            <span>Step {currentStep} of 3</span>
+                            {/* Text accent color changed to orange */}
+                            <span className="text-orange-600">{currentStep === 1 ? 'Contact Info' : currentStep === 2 ? 'Vehicle Preferences' : 'Budget & Details'}</span>
+                        </div>
+                        {/* Progress Bar: Thicker bar, using orange accent */}
+                        <div className="w-full bg-gray-200 rounded-full h-3"> 
+                            <div
+                                className="bg-orange-600 h-3 rounded-full transition-all duration-500 ease-in-out"
+                                style={{ width: `${(currentStep / 3) * 100}%` }}
+                            ></div>
+                        </div>
+                    </div>
 
-            <main>
-                {renderContent()}
-            </main>
+                    {/* The rest of the Steps will be inserted here */}
+                    {currentStep === 1 && <StepOne formData={formData} handleChange={handleChange} nextStep={nextStep} errors={errors} hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(1)} setIsWhatsappSameAsPhone={setIsWhatsappSameAsPhone} isWhatsappSameAsPhone={isWhatsappSameAsPhone} />}
+                    {currentStep === 2 && (
+                        <StepTwo
+                            formData={formData}
+                            handleChange={handleChange}
+                            handleCarPreferenceChange={handleCarPreferenceChange}
+                            addCarPreference={addCarPreference}
+                            removeCarPreference={removeCarPreference}
+                            nextStep={nextStep}
+                            prevStep={prevStep}
+                            errors={errors}
+                            hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(2)}
+                        />
+                    )}
+                    {currentStep === 3 && <StepThree formData={formData} handleChange={handleChange} handleSubmit={handleSubmit} prevStep={prevStep} errors={errors} hasErrorsForCurrentStep={() => hasErrorsForCurrentStepFunc(3)} />}
+                </>
+            )}
+        </div>
+    </div>
+</section>
 
-            {/* Footer Section */}
-            <footer className="bg-gray-900 text-white py-4 mt-6">
-                <div className="container mx-auto text-center px-4">
-                    {/* Emergency Contact (General Support) */}
-                    <div className='border-b border-gray-700 pb-2 mb-2'>
-                        <p className='text-xs font-semibold text-red-400'>
-                            <span className='mr-1'>🚨</span>General Support: 
-                            <a href={`tel:${EMERGENCY_CONTACT_NUMBER}`} className='hover:text-red-300 ml-1 underline'>
-                                {EMERGENCY_CONTACT_NUMBER}
-                            </a>
+      {/* Available Cars Section */}
+      
+
+      {/* How It Works Section */}
+{/* How It Works Section */}
+<section id="how-it-works" className="py-16 sm:py-24 bg-white">
+    <div className="container mx-auto px-4">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-16">How Our Brokerage Works</h2>
+        
+        {/* New Layout: Large cards in a two-column responsive grid */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+            
+            {/* Step 1 & 2 Card (Full Width on Small Screens) */}
+            <div className="space-y-8">
+                {/* Step 1 */}
+                <div className="flex p-6 bg-gray-50 rounded-xl shadow-lg border-l-4 border-orange-600 transition duration-300 hover:shadow-xl">
+                    <div className="flex-shrink-0 mr-4">
+                        <div className="bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold">
+                            1
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-semibold mb-1 text-gray-900">Tell Us Your Needs</h3>
+                        <p className="text-gray-700">
+                            Fill out our simple intake form with your desired vehicle, budget, and preferences.
                         </p>
                     </div>
-
-                    {/* Reduced text size and mb- */}
-                    <div className="text-lg font-extrabold mb-0.5">
-                        Market<span className="text-orange-500">Shopper</span>
-                    </div>
-                    {/* Reduced text size */}
-                    <p className="text-xs opacity-80">
-                        &copy; {new Date().getFullYear()} All rights reserved.
-                    </p>
                 </div>
-            </footer>
+                
+                {/* Step 2 */}
+                <div className="flex p-6 bg-gray-50 rounded-xl shadow-lg border-l-4 border-orange-600 transition duration-300 hover:shadow-xl">
+                    <div className="flex-shrink-0 mr-4">
+                        <div className="bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold">
+                            2
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-semibold mb-1 text-gray-900">We Source & Negotiate</h3>
+                        <p className="text-gray-700">
+                            We tap into our extensive dealer network to find the best matches and negotiate on your behalf.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Step 3 Card (Takes up one column) */}
+            <div className="p-8 bg-orange-600 text-white rounded-xl shadow-2xl flex flex-col justify-center">
+                <div className="flex items-center mb-4">
+                    <div className="bg-white text-orange-600 rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+                        3
+                    </div>
+                    <h3 className="text-3xl font-bold ml-4">Drive Away Happy!</h3>
+                </div>
+                <p className="text-lg opacity-90">
+                    Review the final options presented by your broker, make your choice, and finalize the purchase directly with the trusted dealer. We handle the hard work, so you can enjoy the drive.
+                </p>
+            </div>
+            
         </div>
-    );
-}
+        {/* End New Layout */}
+    </div>
+</section>
+
+      {/* Footer Section */}
+      <footer className="bg-white text-white py-8 sm:py-10 ">
+  <div className="container mx-auto text-center px-4">
+    <p className="text-sm sm:text-base opacity-90 text-black">&copy;
+      {new Date().getFullYear()} 9ja<span className="text-orange-600">CarPlug</span>. All rights reserved.
+    </p>
+    <p className="mt-2 text-xs sm:text-sm text-gray-400">
+      Disclaimer: We are an auto brokerage service connecting buyers with dealers.
+    </p>
+  </div>
+</footer>
+
+      {/* Car Detail Modal */}
+      {showCarDetailModal && (
+        <CarDetailModal car={selectedCarForModal} onClose={closeCarDetailModal} />
+      )}
+    </div>
+  );
+};
+
+export default App;
